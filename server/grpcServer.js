@@ -11,7 +11,7 @@ const dataProto = grpc.loadPackageDefinition(packageDefinition).data;
 function sendData(call, callback) {
     console.log("Received data:", call.request);
 
-    //Respond to the client
+    //Respond to the client (postData.js) that the data was received successfully
     callback(null, { confirmation: "Data received successfully" });
 }
 
