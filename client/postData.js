@@ -1,5 +1,6 @@
 // client/postData.js
 const axios = require("axios");
+// make HTTP requests to the server
 
 function sendData() {
     const data = {
