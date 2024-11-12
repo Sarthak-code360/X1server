@@ -23,6 +23,9 @@ app.post("/send-data", (req, res) => {
     // extracts the message and number fields from the request body
     const { message, number } = req.body;
 
+    // Checkpoint: Log the data when it reaches the HTTP server
+    console.log("Data received at HTTP server:", { message, number });
+
     // calls SendData on gRPC server and send it an object with message and number
     client.sendData({ message, number }, (err, response) => {
         if (err) {
