@@ -18,15 +18,17 @@ app.use(express.json());
 // gRPC client setup
 const client = new dataProto.DataService("localhost:50051", grpc.credentials.createInsecure());
 
+// sets up a POST route to send data to the gRPC server
 app.post("/send-data", (req, res) => {
+    // extracts the message and number fields from the request body
     const { message, number } = req.body;
 
-    // Send data to the gRPC server
+    // calls SendData on gRPC server and send it an object with message and number
     client.sendData({ message, number }, (err, response) => {
         if (err) {
             console.error("Error:", err);
             return res.status(500).json({ error: "Failed to send data to gRPC server" });
-        }
+        } // sends response from gRPC server back to client (HTTP server) that message received from the gRPC server
         res.json({ confirmation: response.confirmation });
     });
 });
