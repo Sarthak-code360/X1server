@@ -5,7 +5,11 @@ const protoLoader = require("@grpc/proto-loader");
 const path = require("path");
 
 const PROTO_PATH = path.join(__dirname, "proto", "data.proto");
+
+// contains the definitions from data.proto in a format grpc
 const packageDefinition = protoLoader.loadSync(PROTO_PATH, {});
+
+// contains the structure of the DataService and its methods (SendData)
 const dataProto = grpc.loadPackageDefinition(packageDefinition).data;
 
 const app = express();
