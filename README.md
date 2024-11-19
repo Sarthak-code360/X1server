@@ -1,6 +1,5 @@
 # Real-Time Data Forwarding: HTTP to gRPC
 
-=============================================
 ## Commands
 
 ### Start HTTP Server
