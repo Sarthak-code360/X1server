@@ -108,6 +108,17 @@ void setup()
 
   Serial.println("");
 
+  for (byte i = 0; i < SHA256_SIZE; i++)
+  {
+    if (public_key[i] < 0x10)
+    {
+      Serial.print('0');
+    }
+    Serial.print(public_key[i], HEX);
+  }
+
+  Serial.println("");
+
   uECC_sign(private_key,
                 hash,
                 SHA256_SIZE,
@@ -133,7 +144,8 @@ void setup()
       dataHexString += "0"; // Add leading zero for single hex digits
     dataHexString += String(signature[i], HEX);
   }
-
+  Serial.println(dataHexString);
+  Serial.println(SigSize);
   Serial.println("");
 
   jsonPayload = "{\"message\": \"" + dataHexString + "\",\"number\":123}";
