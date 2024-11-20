@@ -8,6 +8,7 @@ SoftwareSerial sim7600x(2, 3); // RX, TX
 uint8_t signature[64];
 int SigSize;
 String dataHexString = "";
+String jsonPayload = "";
 
 void sendATCommand(String command, int timeout)
 {
@@ -90,15 +91,39 @@ void setup()
     Serial.print(hash[i], HEX);
   }
 
+  Serial.println("");
+
   Serial.println("Initializing Micro ECC Algo...");
 
   uECC_make_key(public_key, private_key, curve);
 
-  int uECC_sign(private_key,
+  for (byte i = 0; i < SHA256_SIZE; i++)
+  {
+    if (private_key[i] < 0x10)
+    {
+      Serial.print('0');
+    }
+    Serial.print(private_key[i], HEX);
+  }
+
+  Serial.println("");
+
+  uECC_sign(private_key,
                 hash,
                 SHA256_SIZE,
                 signature,
                 curve);
+
+  for (byte i = 0; i < SHA256_SIZE; i++)
+  {
+    if (signature[i] < 0x10)
+    {
+      Serial.print('0');
+    }
+    Serial.print(signature[i], HEX);
+  }
+
+  Serial.println("");
 
   SigSize = sizeof(signature) / sizeof(signature[0]);
 
@@ -108,6 +133,11 @@ void setup()
       dataHexString += "0"; // Add leading zero for single hex digits
     dataHexString += String(signature[i], HEX);
   }
+
+  Serial.println("");
+
+  jsonPayload = "{\"message\": \"" + dataHexString + "\",\"number\":123}";
+
   Serial.println("Initializing HTTP...");
 
   delay(1000);
@@ -134,21 +164,21 @@ void loop()
   sendATCommand("AT+HTTPPARA=\"CID\",1", 1000);
 
   // Set the URL
-  sendATCommand("AT+HTTPPARA=\"URL\",\"http://13.201.78.190:3000/send-data\"", 1000);
-
-// Prepare JSON before sending
-// String jsonPayload = "{\"message\":\"" + dataHexString + "\",\"number\":123}";
-// sendATCommand("AT+HTTPDATA=" + String(jsonPayload.length()) + ",10000", 1000);
-// sim7600x.println(jsonPayload);
+  sendATCommand("AT+HTTPPARA=\"URL\",\"http://43.204.107.234:3000/send-data\"", 1000);
 
   // Set content type   JSON is APPEPTED by HTTP not PLAIN TEXT
   sendATCommand("AT+HTTPPARA=\"CONTENT\",\"application/json\"", 1000);
 
+  // Prepare JSON before sending
+  sendATCommand("AT+HTTPDATA=" + String(jsonPayload.length()) + ",10000", 1000);
+
+  sim7600x.println(jsonPayload);
+
   // Prepare the data to send
-  sendATCommand("AT+HTTPDATA=" + String(SigSize) + ",10000", 1000);
+  //sendATCommand("AT+HTTPDATA=" + String(SigSize) + ",10000", 1000);
 
   // Send the data
-  sim7600x.println(dataHexString);
+  //sim7600x.println(dataHexString);
   delay(1000);
 
   // Perform POST request
