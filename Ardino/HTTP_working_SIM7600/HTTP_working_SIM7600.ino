@@ -134,10 +134,15 @@ void loop()
   sendATCommand("AT+HTTPPARA=\"CID\",1", 1000);
 
   // Set the URL
-  sendATCommand("AT+HTTPPARA=\"URL\",\"https://13.201.78.190\"", 1000);
+  sendATCommand("AT+HTTPPARA=\"URL\",\"http://13.201.78.190:3000/send-data\"", 1000);
 
-  // Set content type
-  sendATCommand("AT+HTTPPARA=\"CONTENT\",\"text/plain\"", 1000);
+// Prepare JSON before sending
+// String jsonPayload = "{\"message\":\"" + dataHexString + "\",\"number\":123}";
+// sendATCommand("AT+HTTPDATA=" + String(jsonPayload.length()) + ",10000", 1000);
+// sim7600x.println(jsonPayload);
+
+  // Set content type   JSON is APPEPTED by HTTP not PLAIN TEXT
+  sendATCommand("AT+HTTPPARA=\"CONTENT\",\"application/json\"", 1000);
 
   // Prepare the data to send
   sendATCommand("AT+HTTPDATA=" + String(SigSize) + ",10000", 1000);
