@@ -19,6 +19,6 @@ app.post("/send-data", (req, res) => {
 });
 
 // Start the server on port 3000
-app.listen(3000, () => {
+app.listen(3000, "0.0.0.0", () => {
     console.log("HTTP server running on port 3000");
 });
