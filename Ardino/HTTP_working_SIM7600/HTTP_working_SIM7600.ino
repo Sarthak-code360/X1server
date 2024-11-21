@@ -176,7 +176,7 @@ void loop()
   sendATCommand("AT+HTTPPARA=\"CID\",1", 1000);
 
   // Set the URL
-  sendATCommand("AT+HTTPPARA=\"URL\",\"http://43.204.107.234:3000/send-data\"", 1000);
+  sendATCommand("AT+HTTPPARA=\"URL\",\"http://13.232.182.84:3000/send-data\"", 1000);
 
   // Set content type   JSON is APPEPTED by HTTP not PLAIN TEXT
   sendATCommand("AT+HTTPPARA=\"CONTENT\",\"application/json\"", 1000);

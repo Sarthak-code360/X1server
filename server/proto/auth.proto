@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package authentication;
+
+message Step1Request {
+    string serialNumber = 1;
+    string signature = 2; // Signature of the serial number's hash
+}
+
+message Step1Response {
+    string status = 1; // "success" or "failure"
+    string challenge = 2; // Random challenge for Step 2 (if success)
+}
+
+message Step2Request {
+    string challengeResponseSignature = 1; // Signature of XOR(Random Challenge, Firmware Number)
+}
+
+message Step2Response {
+    string status = 1; // "verified" or "unverified"
+}

@@ -15,6 +15,18 @@ app.post("/send-data", (req: Request, res: Response) => {
     });
 });
 
+// GET route to send data to Arduino
+app.get("/get-data", (req: Request, res: Response) => {
+    // Define the data you want to send to Arduino
+    const dataToSend = {
+        message: "Hello Arduino",
+        number: 42
+    };
+
+    // Send the data as a response
+    res.status(200).json(dataToSend);
+});
+
 // Start the server on port 3000
 app.listen(3000, "0.0.0.0", (err?: Error) => {
     if (err) {
