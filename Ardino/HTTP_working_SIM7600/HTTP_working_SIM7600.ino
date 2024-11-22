@@ -5,10 +5,24 @@
 // Create software serial object to communicate with SIM7600X
 SoftwareSerial sim7600x(2, 3); // RX, TX
 
-uint8_t signature[64];
+uint8_t signature[32];
 int SigSize;
 String dataHexString = "";
 String jsonPayload = "";
+
+uint8_t PRIVATE_KEY[32] = {
+  0xEF, 0xFF, 0x6F, 0xD5, 0xD8, 0xBA, 0x6B, 0x7A,
+  0xFD, 0xFF, 0x6D, 0xC7, 0xD6, 0x56, 0xC7, 0x7B,
+  0x01, 0xFC, 0xAE, 0xDE, 0x5A, 0x5B, 0xD6, 0xFE, 
+  0x3F, 0xFC, 0x6A, 0xA8, 0x7A, 0x5F, 0xBD, 0x80
+};
+
+uint8_t PUBLIC_KEY[32] = {
+  0xD4, 0x74, 0xD7, 0x0C, 0xB6, 0x00, 0xE7, 0x1F,
+  0x15, 0x60, 0xAC, 0x97, 0x31, 0x50, 0x2D, 0xAD,
+  0x6D, 0x26, 0xC7, 0x9A, 0xB7, 0x78, 0x2A, 0x5B,
+  0x50, 0x1E, 0xAB, 0x0D, 0x39, 0x37, 0xBC, 0x10
+};
 
 void sendATCommand(String command, int timeout)
 {
@@ -67,70 +81,76 @@ void setup()
 
   Serial.println("Initializing SHA-256 Algo...");
 
-  const char *hello = "Hello World";
-  hasher.doUpdate(hello, strlen(hello));
+  // Define a serial number as a 32-byte array
+  byte serialNumber[32] = {
+    0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
+    0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10,
+    0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18,
+    0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F, 0x20
+  };
 
-  /* Update the hash with just a plain string*/
-  hasher.doUpdate("Goodbye World");
-
-  /* Update the hash with a binary message */
-  byte message[10] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-  hasher.doUpdate(message, sizeof(message));
+  // Hash the serial number
+  hasher.doUpdate(serialNumber, sizeof(serialNumber));
 
   /* Compute the final hash */
   byte hash[SHA256_SIZE];
   hasher.doFinal(hash);
 
-  /* hash now contains our 32 byte hash */
-  for (byte i = 0; i < SHA256_SIZE; i++)
-  {
+  /* Print the resulting hash */
+  Serial.println("Computed SHA-256 Hash:");
+  for (byte i = 0; i < SHA256_SIZE; i++) {
     Serial.print("0x");
-    if (hash[i] < 0x10)
-    {
-      Serial.print('0');
+    if (hash[i] < 0x10) {
+      Serial.print('0'); // Add leading zero for single hex digits
     }
     Serial.print(hash[i], HEX);
-    Serial.println(", ");
+    Serial.print(", ");
   }
+  Serial.println();
 
-  Serial.println("");
 
   Serial.println("Initializing Micro ECC Algo...");
 
-  uECC_make_key(public_key, private_key, curve);
+  // ESS Key Generation and printing
+  // Serial.println("Private Key: ");
+  // uECC_make_key(public_key, private_key, curve);
+  // // print Private Key
+  // for (byte i = 0; i < SHA256_SIZE; i++)
+  // {
+  //   Serial.print("0x");
+  //   if (private_key[i] < 0x10)
+  //   {
+  //     Serial.print('0');
+  //   }
+  //   Serial.print(private_key[i], HEX);
+  //   Serial.print(", ");
+  // }
 
-  for (byte i = 0; i < SHA256_SIZE; i++)
-  {
-    Serial.print("0x");
-    if (private_key[i] < 0x10)
-    {
-      Serial.print('0');
-    }
-    Serial.print(private_key[i], HEX);
-    Serial.println(", ");
-  }
+  // Serial.println("");
 
-  Serial.println("");
+  // Serial.println("Public Key: ");
+  // // print Public key
+  // for (byte i = 0; i < SHA256_SIZE; i++)
+  // {
+  //   Serial.print("0x");
+  //   if (public_key[i] < 0x10)
+  //   {
+  //     Serial.print('0');
+  //   }
+  //   Serial.print(public_key[i], HEX);
+  //   Serial.print(", ");
+  // }
+  // Serial.println("");
 
-  for (byte i = 0; i < SHA256_SIZE; i++)
-  {
-    Serial.print("0x");
-    if (public_key[i] < 0x10)
-    {
-      Serial.print('0');
-    }
-    Serial.print(public_key[i], HEX);
-    Serial.println(", ");
-  }
-
-  Serial.println("");
-
-  uECC_sign(private_key,
+  Serial.println("Signature: ");
+  // ECC Signature Generation
+  uECC_sign(    PRIVATE_KEY,
                 hash,
                 SHA256_SIZE,
                 signature,
                 curve);
 
+  // Converts the signature to a hexadecimal string
   for (byte i = 0; i < SHA256_SIZE; i++)
   {
     if (signature[i] < 0x10)
@@ -151,7 +171,6 @@ void setup()
     dataHexString += String(signature[i], HEX);
   }
   Serial.println(dataHexString);
-  Serial.println(SigSize);
   Serial.println("");
 
   jsonPayload = "{\"message\": \"" + dataHexString + "\",\"number\":123}";
@@ -184,7 +203,7 @@ void loop()
   // Set the URL
   sendATCommand("AT+HTTPPARA=\"URL\",\"http://13.232.182.84:3000/send-data\"", 1000);
 
-  // Set content type   JSON is APPEPTED by HTTP not PLAIN TEXT
+  // Set content type to JSON for  HTTP
   sendATCommand("AT+HTTPPARA=\"CONTENT\",\"application/json\"", 1000);
 
   // Prepare JSON before sending
@@ -199,10 +218,10 @@ void loop()
   //sim7600x.println(dataHexString);
   delay(1000);
 
-  // Perform POST request
+  // Perform POST request -> Send data
   sendATCommand("AT+HTTPACTION=1", 5000);
 
-  // Read the response
+  // Read the response -> Recive response
   sendATCommand("AT+HTTPREAD", 1000);
 
   // Terminate HTTP service
