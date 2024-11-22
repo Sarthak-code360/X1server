@@ -14,7 +14,7 @@ void sendATCommand(String command, int timeout)
 {
   Serial.println("Sending: " + command);
   sim7600x.println(command);
-  delay(timeout);
+  delay(timeout); 
 
   while (sim7600x.available())
   {
