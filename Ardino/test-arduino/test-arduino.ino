@@ -51,7 +51,7 @@ void loop()
   sendATCommand("AT+HTTPPARA=\"CID\",1", 1000);
 
   // Set the URL for your AWS EC2 instance
-  sendATCommand("AT+HTTPPARA=\"URL\",\"http://13.232.182.84:3000/send-data\"", 1000);
+  sendATCommand("AT+HTTPPARA=\"URL\",\"http://65.0.176.47:3000/send-data\"", 1000);
 
   // Set content type as JSON
   sendATCommand("AT+HTTPPARA=\"CONTENT\",\"application/json\"", 1000);

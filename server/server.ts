@@ -19,7 +19,7 @@ app.post("/send-data", (req: Request, res: Response) => {
 app.get("/get-data", (req: Request, res: Response) => {
     // Define the data you want to send to Arduino
     const dataToSend = {
-        message: "Hello Arduino",
+        message: "Hello Arduino this is Server",
         number: 42
     };
 

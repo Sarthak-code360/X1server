@@ -84,11 +84,13 @@ void setup()
   /* hash now contains our 32 byte hash */
   for (byte i = 0; i < SHA256_SIZE; i++)
   {
+    Serial.print("0x");
     if (hash[i] < 0x10)
     {
       Serial.print('0');
     }
     Serial.print(hash[i], HEX);
+    Serial.println(", ");
   }
 
   Serial.println("");
@@ -99,22 +101,26 @@ void setup()
 
   for (byte i = 0; i < SHA256_SIZE; i++)
   {
+    Serial.print("0x");
     if (private_key[i] < 0x10)
     {
       Serial.print('0');
     }
     Serial.print(private_key[i], HEX);
+    Serial.println(", ");
   }
 
   Serial.println("");
 
   for (byte i = 0; i < SHA256_SIZE; i++)
   {
+    Serial.print("0x");
     if (public_key[i] < 0x10)
     {
       Serial.print('0');
     }
     Serial.print(public_key[i], HEX);
+    Serial.println(", ");
   }
 
   Serial.println("");
