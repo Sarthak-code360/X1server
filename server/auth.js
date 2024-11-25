@@ -87,7 +87,7 @@ app.post('/verify', (req, res) => {
         randomChallenge = generateRandomChallenge();
         console.log('Random Challenge:', byteToString(randomChallenge));
 
-        return res.json({ message: 'Random challenge generated. Use GET /random-challenge to fetch it.' });
+        return res.json({ message: 'Signature1 Verified!! Random challenge generated. Use GET /random-challenge to fetch it.' });
     } else {
         console.log('Signature verification failed.');
         return res.status(401).json({ error: 'Signature verification failed.' });
