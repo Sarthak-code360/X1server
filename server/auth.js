@@ -70,6 +70,7 @@ const verifySignature = (message, signature) => {
 app.post('/verify', (req, res) => {
     const { signature } = req.body;
 
+    console.log('Raw request body:', req.body);
     console.log('Signature received:', signature);
 
     if (!signature) {
@@ -77,8 +78,9 @@ app.post('/verify', (req, res) => {
     }
 
     const message1 = hashData(serialNumber);
-    const isVerified = verifySignature(message1, signature);
     console.log('Message1:', message1);
+
+    const isVerified = verifySignature(message1, signature);
 
     if (isVerified) {
         console.log('Successfully verified Signature1 !');
@@ -87,7 +89,9 @@ app.post('/verify', (req, res) => {
         randomChallenge = generateRandomChallenge();
         console.log('Random Challenge:', byteToString(randomChallenge));
 
-        return res.json({ message: 'Signature1 Verified!! Random challenge generated. Use GET /random-challenge to fetch it.' });
+        return res.json({
+            message: 'Signature1 Verified!! Random challenge generated. Use GET /random-challenge to fetch it.'
+        });
     } else {
         console.log('Signature verification failed.');
         return res.status(401).json({ error: 'Signature verification failed.' });

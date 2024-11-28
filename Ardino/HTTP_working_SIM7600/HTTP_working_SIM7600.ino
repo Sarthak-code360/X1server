@@ -162,7 +162,7 @@ void setup()
   Serial.println(dataHexString);
   Serial.println("");
 
-  jsonPayload = "{\"message\": \"" + dataHexString + "\",\"number\":123}";
+  jsonPayload = "{\"signature\": \"" + dataHexString +"\"}";
 
   Serial.println("Initializing HTTP...");
 
@@ -189,30 +189,28 @@ void loop()
   sendATCommand("AT+HTTPINIT", 1000);
   sendATCommand("AT+HTTPPARA=\"CID\",1", 1000);
 
-  // Set the URL
-  sendATCommand("AT+HTTPPARA=\"URL\",\"http://3.111.42.71:3000/verify\"", 1000);
+  // Set the AWS server URL with the correct port and endpoint
+  sendATCommand("AT+HTTPPARA=\"URL\",\"http://13.201.81.29:3000/verify\"", 1000);
 
-  // Set content type to JSON for  HTTP
+  // Set content type to JSON
   sendATCommand("AT+HTTPPARA=\"CONTENT\",\"application/json\"", 1000);
 
-  // Prepare JSON before sending
+  // Prepare HTTP payload
   sendATCommand("AT+HTTPDATA=" + String(jsonPayload.length()) + ",10000", 1000);
 
+  // Send the JSON payload
   sim7600x.println(jsonPayload);
-
-  // Prepare the data to send
-  //sendATCommand("AT+HTTPDATA=" + String(SigSize) + ",10000", 1000);
-
-  // Send the data
-  //sim7600x.println(dataHexString);
   delay(1000);
 
-  // Perform POST request -> Send data
+  // Perform HTTP POST request
   sendATCommand("AT+HTTPACTION=1", 5000);
 
-  // Read the response -> Recive response
+  // Read and print the server's response
   sendATCommand("AT+HTTPREAD", 1000);
 
-  // Terminate HTTP service
+  // Terminate HTTP session
   sendATCommand("AT+HTTPTERM", 1000);
+
+  // Delay before the next iteration (optional, for testing purposes)
+  delay(30000); // Wait for 30 seconds before retrying (if needed)
 }
