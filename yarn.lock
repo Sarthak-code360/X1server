@@ -282,7 +282,7 @@
   "resolved" "https://registry.npmjs.org/bn.js/-/bn.js-4.12.1.tgz"
   "version" "4.12.1"
 
-"body-parser@1.20.3":
+"body-parser@^1.20.3", "body-parser@1.20.3":
   "integrity" "sha512-7rAxByjUMqQ3/bHJy7D6OGXvx/MMc4IqBn/X0fcM1QUcAItpZrBEYhWGem+tzXH90c+G01ypMcYJBO9Y30203g=="
   "resolved" "https://registry.npmjs.org/body-parser/-/body-parser-1.20.3.tgz"
   "version" "1.20.3"
