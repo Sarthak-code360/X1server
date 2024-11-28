@@ -44,121 +44,45 @@ uint8_t FIRMWARE_NUM[64] = {
 };
 
 
-// void sendATCommand(String command, int timeout)
-// {
-//   Serial.println("Sending: " + command);
-//   sim7600x.println(command);
-//   delay(timeout); 
-
-//   while (sim7600x.available())
-//   {
-//     String response = sim7600x.readString();
-//     Serial.println(response);
-//   }
-// }
-
-String sendATCommand(String command, int timeout) {
+void sendATCommand(String command, int timeout)
+{
+  Serial.println("Sending: " + command);
   sim7600x.println(command);
-  String response = "";
-  long int time = millis();
-  while ((time + timeout) > millis()) {
-    while (sim7600x.available()) {
-      char c = sim7600x.read();
-      response += c;
-    }
+  delay(timeout); 
+
+  while (sim7600x.available())
+  {
+    String response = sim7600x.readString();
+    Serial.println(response);
   }
-  return response;
 }
 
-
-void sendSignature() {
-  // HTTP Initialization
-  sendATCommand("AT+HTTPINIT", 1000);
-  sendATCommand("AT+HTTPPARA=\"CID\",1", 1000);
-  sendATCommand("AT+HTTPPARA=\"URL\",\"http://13.233.131.58:3000/verify\"", 1000);
-  sendATCommand("AT+HTTPPARA=\"CONTENT\",\"application/json\"", 1000);
-
-  // Prepare payload
-  sendATCommand("AT+HTTPDATA=" + String(jsonPayload.length()) + ",10000", 1000);
-  sim7600x.println(jsonPayload);
-  delay(1000);
-
-  // Perform POST request
-  sendATCommand("AT+HTTPACTION=1", 5000);
-
-  // Read Response
-  sendATCommand("AT+HTTPREAD", 1000);
-
-  // Terminate HTTP
-  sendATCommand("AT+HTTPTERM", 1000);
-}
-
-void waitForChallenge() {
-  unsigned long startTime = millis();
-  const unsigned long timeout = 30000; // 30 seconds timeout
-  bool challengeReceived = false;
-
-  while (millis() - startTime < timeout) {
-    // HTTP GET Initialization
-    sendATCommand("AT+HTTPINIT", 1000);
-    sendATCommand("AT+HTTPPARA=\"CID\",1", 1000);
-    sendATCommand("AT+HTTPPARA=\"URL\",\"http://13.233.131.58:3000/random-challenge\"", 1000);
-    sendATCommand("AT+HTTPACTION=0", 5000); // GET request
-
-    // Read Response
-    String response = sendATCommand("AT+HTTPREAD", 1000);
-
-    if (response.indexOf("\"challenge\"") >= 0) { 
-      Serial.println("Challenge Received: " + response);
-      challengeReceived = true;
-      break;
-    }
-
-    delay(1000); // Polling interval
-  }
-
-  if (!challengeReceived) {
-    Serial.println("Timeout: No challenge received.");
-  }
-
-  // Terminate HTTP
-  sendATCommand("AT+HTTPTERM", 1000);
-}
-
-
-// static int RNG(uint8_t *dest, unsigned size) {
-//   // Use the least-significant bits from the ADC for an unconnected pin (or connected to a source of 
-//   // random noise). This can take a long time to generate random data if the result of analogRead(0) 
-//   // doesn't change very frequently.
-//   while (size) {
-//     uint8_t val = 0;
-//     for (unsigned i = 0; i < 8; ++i) {
-//       int init = analogRead(0);
-//       int count = 0;
-//       while (analogRead(0) == init) {
-//         ++count;
-//       }
+static int RNG(uint8_t *dest, unsigned size) {
+  // Use the least-significant bits from the ADC for an unconnected pin (or connected to a source of 
+  // random noise). This can take a long time to generate random data if the result of analogRead(0) 
+  // doesn't change very frequently.
+  while (size) {
+    uint8_t val = 0;
+    for (unsigned i = 0; i < 8; ++i) {
+      int init = analogRead(0);
+      int count = 0;
+      while (analogRead(0) == init) {
+        ++count;
+      }
       
-//       if (count == 0) {
-//          val = (val << 1) | (init & 0x01);
-//       } else {
-//          val = (val << 1) | (count & 0x01);
-//       }
-//     }
-//     *dest = val;
-//     ++dest;
-//     --size;
-//   }
-//   // NOTE: it would be a good idea to hash the resulting random data using SHA-256 or similar.
-//   return 1;
-// }
-int RNG(uint8_t *dest, unsigned size) {
-  for (unsigned i = 0; i < size; i++) {
-    dest[i] = random(0, 256); // Generate random byte
+      if (count == 0) {
+         val = (val << 1) | (init & 0x01);
+      } else {
+         val = (val << 1) | (count & 0x01);
+      }
+    }
+    *dest = val;
+    ++dest;
+    --size;
   }
-  return 1; // Indicate success
+  // NOTE: it would be a good idea to hash the resulting random data using SHA-256 or similar.
+  return 1;
 }
-
 
 void setup()
 {
@@ -206,37 +130,6 @@ void setup()
 
 
   Serial.println("Initializing Micro ECC Algo...");
-
-  // ESS Key Generation and printing
-  // Serial.println("Private Key: ");
-  // uECC_make_key(public_key_, private_key_, curve);
-  // // print Private Key
-  // for (byte i = 0; i < 64; i++)
-  // {
-  //   Serial.print("0x");
-  //   if (private_key_[i] < 0x10)
-  //   {
-  //     Serial.print('0');
-  //   }
-  //   Serial.print(private_key_[i], HEX);
-  //   Serial.print(", ");
-  // }
-
-  // Serial.println("");
-
-  // Serial.println("Public Key: ");
-  // // print Public key
-  // for (byte i = 0; i < 64; i++)
-  // {
-  //   Serial.print("0x");
-  //   if (public_key_[i] < 0x10)
-  //   {
-  //     Serial.print('0');
-  //   }
-  //   Serial.print(public_key_[i], HEX);
-  //   Serial.print(", ");
-  // }
-  // Serial.println("");
 
   Serial.println("Signature: ");
   // ECC Signature Generation
@@ -287,46 +180,39 @@ void setup()
   sendATCommand("AT+SAPBR=3,1,\"Contype\",\"GPRS\"", 1000);
   sendATCommand("AT+SAPBR=3,1,\"APN\",\"airtelgprs.com\"", 1000); // Use your carrier's APN
   sendATCommand("AT+SAPBR=1,1", 2000);
-
-  // Send the Signature
-  sendSignature();
-
-  // Wait for the Random Challenge
-  waitForChallenge();
 }
 
 
 void loop()
 {
-  // // Initialize HTTP service
-  // sendATCommand("AT+HTTPINIT", 1000);
-  // sendATCommand("AT+HTTPPARA=\"CID\",1", 1000);
+  // Initialize HTTP service
+  sendATCommand("AT+HTTPINIT", 1000);
+  sendATCommand("AT+HTTPPARA=\"CID\",1", 1000);
 
-  // // Set the URL
-  // sendATCommand("AT+HTTPPARA=\"URL\",\"http://13.232.182.84:3000/\"", 1000);
+  // Set the URL
+  sendATCommand("AT+HTTPPARA=\"URL\",\"http://3.111.42.71:3000/verify\"", 1000);
 
-  // // Set content type to JSON for  HTTP
-  // sendATCommand("AT+HTTPPARA=\"CONTENT\",\"application/json\"", 1000);
+  // Set content type to JSON for  HTTP
+  sendATCommand("AT+HTTPPARA=\"CONTENT\",\"application/json\"", 1000);
 
-  // // Prepare JSON before sending
-  // sendATCommand("AT+HTTPDATA=" + String(jsonPayload.length()) + ",10000", 1000);
+  // Prepare JSON before sending
+  sendATCommand("AT+HTTPDATA=" + String(jsonPayload.length()) + ",10000", 1000);
 
-  // sim7600x.println(jsonPayload);
+  sim7600x.println(jsonPayload);
 
-  // // Prepare the data to send
-  // //sendATCommand("AT+HTTPDATA=" + String(SigSize) + ",10000", 1000);
+  // Prepare the data to send
+  //sendATCommand("AT+HTTPDATA=" + String(SigSize) + ",10000", 1000);
 
-  // // Send the data
-  // //sim7600x.println(dataHexString);
-  // delay(1000);
+  // Send the data
+  //sim7600x.println(dataHexString);
+  delay(1000);
 
-  // // Perform POST request -> Send data
-  // sendATCommand("AT+HTTPACTION=1", 5000);
+  // Perform POST request -> Send data
+  sendATCommand("AT+HTTPACTION=1", 5000);
 
-  // // Read the response -> Recive response
-  // sendATCommand("AT+HTTPREAD", 1000);
+  // Read the response -> Recive response
+  sendATCommand("AT+HTTPREAD", 1000);
 
-  // // Terminate HTTP service
-  // sendATCommand("AT+HTTPTERM", 1000);
+  // Terminate HTTP service
+  sendATCommand("AT+HTTPTERM", 1000);
 }
-

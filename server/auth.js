@@ -138,7 +138,7 @@ app.post('/signature2', (req, res) => {
 
 // Start the server and print Serial Number and its hash
 app.listen(port, () => {
-    console.log(`Auth server running on http://localhost:${port}`);
+    console.log(`Auth server running on 3000 port.`);
 
     // Print the serial number and its hash immediately when the server starts
     console.log('Serial Number:', byteToString(serialNumber));

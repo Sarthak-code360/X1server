@@ -31,3 +31,34 @@ e3b6b54b199147aa8db35304b2201f92562edd14acdad45138b18cdfeaed0fc44f89b758713d382f
 ```
 
 
+// ESS Key Generation and printing
+  // Serial.println("Private Key: ");
+  // uECC_make_key(public_key_, private_key_, curve);
+  // // print Private Key
+  // for (byte i = 0; i < 64; i++)
+  // {
+  //   Serial.print("0x");
+  //   if (private_key_[i] < 0x10)
+  //   {
+  //     Serial.print('0');
+  //   }
+  //   Serial.print(private_key_[i], HEX);
+  //   Serial.print(", ");
+  // }
+
+  // Serial.println("");
+
+  // Serial.println("Public Key: ");
+  // // print Public key
+  // for (byte i = 0; i < 64; i++)
+  // {
+  //   Serial.print("0x");
+  //   if (public_key_[i] < 0x10)
+  //   {
+  //     Serial.print('0');
+  //   }
+  //   Serial.print(public_key_[i], HEX);
+  //   Serial.print(", ");
+  // }
+  // Serial.println("");
+
