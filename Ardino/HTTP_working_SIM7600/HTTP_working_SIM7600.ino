@@ -57,6 +57,24 @@ void sendATCommand(String command, int timeout)
   }
 }
 
+void sendGETRequest(String url, int timeout)
+{
+  Serial.println("Sending GET request to: " + url);
+  sim7600x.println("AT+HTTPINIT");
+  delay(1000);
+  sim7600x.println("AT+HTTPPARA=\"CID\",1");
+  delay(1000);
+  sim7600x.println("AT+HTTPPARA=\"URL\",\"" + url + "\"");
+  delay(1000);
+  sim7600x.println("AT+HTTPACTION=0");
+  delay(timeout);  // Wait for response
+  while (sim7600x.available()) {
+    String response = sim7600x.readString();
+    Serial.println("GET Response: " + response);
+  }
+  sim7600x.println("AT+HTTPTERM");
+}
+
 static int RNG(uint8_t *dest, unsigned size) {
   // Use the least-significant bits from the ADC for an unconnected pin (or connected to a source of 
   // random noise). This can take a long time to generate random data if the result of analogRead(0) 
@@ -190,7 +208,7 @@ void loop()
   sendATCommand("AT+HTTPPARA=\"CID\",1", 1000);
 
   // Set the AWS server URL with the correct port and endpoint
-  sendATCommand("AT+HTTPPARA=\"URL\",\"http://13.201.81.29:3000/verify\"", 1000);
+  sendATCommand("AT+HTTPPARA=\"URL\",\"https://webhook.site/795f54d1-1df3-4da3-b748-85c573492931\"", 1000);
 
   // Set content type to JSON
   sendATCommand("AT+HTTPPARA=\"CONTENT\",\"application/json\"", 1000);
@@ -207,6 +225,13 @@ void loop()
 
   // Read and print the server's response
   sendATCommand("AT+HTTPREAD", 1000);
+
+  // Terminate HTTP session
+  sendATCommand("AT+HTTPTERM", 1000);
+
+  // After sending signature, now send GET request to fetch random challenge
+  String randomChallengeURL = "https://webhook.site/795f54d1-1df3-4da3-b748-85c573492931";
+  sendGETRequest(randomChallengeURL, 5000);
 
   // Terminate HTTP session
   sendATCommand("AT+HTTPTERM", 1000);
