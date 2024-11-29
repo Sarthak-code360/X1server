@@ -74,7 +74,7 @@ app.get('/immobilize-data', (req, res) => {
     res.json({ immobilizeData });
 });
 
-app.get('/rpm-data', (req, res) => {
+app.get('/rpm-preset', (req, res) => {
     console.log('Received a GET request for RPM Preset Data');
     console.log('Current rpm_preset value:', rpm_preset);
     res.json({ rpm_preset });
