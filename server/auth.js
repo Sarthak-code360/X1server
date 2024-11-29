@@ -37,6 +37,8 @@ const ec = new elliptic.ec('p256');
 // Variables for tracking progress
 let randomChallenge = null;
 let message2 = null;
+let immobilizeData = "1";
+let rpm_preset = "0";
 
 // Utility function to convert byte array to hex string
 const byteToString = (bytes) => Buffer.from(bytes).toString('hex');
@@ -67,6 +69,58 @@ const verifySignature = (message, signature) => {
 };
 
 // Routes
+app.get('/immobilize-data', (req, res) => {
+    console.log('Immobilize Data sent to hardware:', immobilizeData);
+    res.json({ immobilizeData });
+});
+
+app.get('/rpm-data', (req, res) => {
+    console.log('Received a GET request for RPM Preset Data');
+    console.log('Current rpm_preset value:', rpm_preset);
+    res.json({ rpm_preset });
+});
+
+app.post('/device-data', (req, res) => {
+    const {
+        gpsCoordinates,
+        signature,
+        rpm,
+        current,
+        voltage,
+        temperature,
+    } = req.body; // Use req.body to handle POST data
+
+    // Validate that all required fields are provided
+    if (!gpsCoordinates || !signature || !rpm || !current || !voltage || !temperature) {
+        return res.status(400).json({
+            error: 'Missing one or more required fields: gpsCoordinates, signature, rpm, current, voltage, temperature',
+        });
+    }
+
+    // Log the received data
+    console.log('Device Data Received:');
+    console.log('GPS Coordinates:', gpsCoordinates);
+    console.log('Signature:', signature);
+    console.log('RPM:', rpm);
+    console.log('Current:', current);
+    console.log('Voltage:', voltage);
+    console.log('Temperature:', temperature);
+
+    // Respond to the device with a success message
+    res.json({
+        message: 'Device data received successfully!',
+        data: {
+            gpsCoordinates,
+            signature,
+            rpm,
+            current,
+            voltage,
+            temperature,
+        },
+    });
+});
+
+
 app.post('/verify', (req, res) => {
     const { signature } = req.body;
 
@@ -142,7 +196,7 @@ app.post('/signature2', (req, res) => {
 
 // Start the server and print Serial Number and its hash
 app.listen(port, () => {
-    console.log(`Auth server running on 3000 port.`);
+    console.log(`Server running on 3000 port.`);
 
     // Print the serial number and its hash immediately when the server starts
     console.log('Serial Number:', byteToString(serialNumber));
