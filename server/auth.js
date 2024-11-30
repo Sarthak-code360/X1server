@@ -170,35 +170,51 @@ app.post('/device-data', (req, res) => {
 
 
 app.post('/verify', (req, res) => {
-    const { signature } = req.body;
-
-    console.log('Raw request body:', req.body);
-    console.log('Signature received:', signature);
-
-    if (!signature) {
-        return res.status(400).json({ error: 'Signature is required.' });
-    }
-
-    const message1 = hashData(serialNumber);
-    console.log('Message1:', message1);
-
-    const isVerified = verifySignature(message1, signature);
-
-    if (isVerified) {
-        console.log('Successfully verified Signature1 !');
-
-        // Generate and store Random Challenge
-        randomChallenge = generateRandomChallenge();
-        console.log('Random Challenge:', byteToString(randomChallenge));
-
-        return res.json({
-            message: 'Signature1 Verified!! Random challenge generated. Use GET /random-challenge to fetch it.'
-        });
-    } else {
-        console.log('Signature verification failed.');
-        return res.status(401).json({ error: 'Signature verification failed.' });
-    }
+    req.on('data', (chunk) => {
+        console.log('Raw Data Received:', chunk.toString());
+    });
+    req.on('end', () => {
+        console.log('End of Request');
+        try {
+            const data = JSON.parse(req.body);
+            res.status(200).send({ success: true, data });
+        } catch (error) {
+            console.error('JSON Parse Error:', error.message);
+            res.status(400).send({ success: false, error: error.message });
+        }
+    });
 });
+
+// app.post('/verify', (req, res) => {
+//     const { signature } = req.body;
+
+//     console.log('Raw request body:', req.body);
+//     console.log('Signature received:', signature);
+
+//     if (!signature) {
+//         return res.status(400).json({ error: 'Signature is required.' });
+//     }
+
+//     const message1 = hashData(serialNumber);
+//     console.log('Message1:', message1);
+
+//     const isVerified = verifySignature(message1, signature);
+
+//     if (isVerified) {
+//         console.log('Successfully verified Signature1 !');
+
+//         // Generate and store Random Challenge
+//         randomChallenge = generateRandomChallenge();
+//         console.log('Random Challenge:', byteToString(randomChallenge));
+
+//         return res.json({
+//             message: 'Signature1 Verified!! Random challenge generated. Use GET /random-challenge to fetch it.'
+//         });
+//     } else {
+//         console.log('Signature verification failed.');
+//         return res.status(401).json({ error: 'Signature verification failed.' });
+//     }
+// });
 
 app.get('/random-challenge', (req, res) => {
     if (!randomChallenge) {
