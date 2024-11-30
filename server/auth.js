@@ -69,6 +69,54 @@ const verifySignature = (message, signature) => {
 };
 
 // Routes
+
+// POST endpoint to receive immobilize data
+app.post('/app-immobilize-data', (req, res) => {
+    const { immobilizeDataMob } = req.body;
+
+    if (!immobilizeDataMob) {
+        return res.status(400).json({ error: 'Immobilize data is required.' });
+    }
+
+    console.log('Immobilize Data received from app:', immobilizeDataMob);
+    // Here, send the immobilize data to hardware
+    // Simulate the hardware action
+    console.log('Sending immobilize data to hardware...');
+    res.json({ message: 'Now sending Immobilize data to hardware!' });
+});
+
+// POST endpoint to receive RPM preset
+app.post('/app-rpm-preset', (req, res) => {
+    const { rpmPresetMob } = req.body;
+
+    if (!rpmPresetMob) {
+        return res.status(400).json({ error: 'RPM preset is required.' });
+    }
+
+    console.log('RPM Preset received from app:', rpmPresetMob);
+    // Here, send the RPM data to hardware
+    // Simulate the hardware action
+    console.log('Sending RPM preset to hardware...');
+    res.json({ message: 'Now sending RPM preset to hardware!' });
+});
+
+// GET endpoint to send device data to the app
+app.get('/app-device-data', (req, res) => {
+    // Simulate fetching data from hardware
+    const deviceDataMob = {
+        gpsCoordinates: "25.2048, 55.2708", // Sample coordinates
+        signature: "abc123signature",
+        rpm: "1500",
+        current: "50",
+        voltage: "220",
+        temperature: "45",
+    };
+
+    console.log('Device Data sent to app:', deviceDataMob);
+    res.json(deviceDataMob);
+});
+
+
 app.get('/immobilize-data', (req, res) => {
     console.log('Immobilize Data sent to hardware:', immobilizeData);
     res.json({ immobilizeData });
