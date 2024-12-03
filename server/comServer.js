@@ -29,7 +29,9 @@ const plainTextToJson = (text) => {
 // Mobile App Endpoints (JSON)
 app.post('/app-immobilize-data', (req, res) => {
     const { immobilizeDataMob } = req.body;
-    if (!immobilizeDataMob) {
+
+    // Explicitly check for null or undefined
+    if (immobilizeDataMob === null || immobilizeDataMob === undefined) {
         return res.status(400).json({ error: 'Immobilize data is required.' });
     }
 
@@ -42,6 +44,7 @@ app.post('/app-immobilize-data', (req, res) => {
 
     res.json({ message: 'Immobilize data forwarded to hardware.' });
 });
+
 
 app.post('/app-rpm-preset', (req, res) => {
     const { rpmPresetMob } = req.body;
