@@ -8,8 +8,8 @@ app.use(bodyParser.json());
 app.use(bodyParser.text()); // For handling plain text requests
 
 // IMMOBILIZATION DATA
-let immobilizeData = "1"; // Default immobilization data
-let rpmPreset = "0"; // Default RPM preset
+let immobilizeData = null;
+let rpmPreset = null;
 let latestHardwareData = null; // To store the latest hardware data
 
 // Utility function: Convert JSON to Plain Text
