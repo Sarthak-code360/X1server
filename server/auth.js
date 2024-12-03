@@ -8,6 +8,8 @@ const port = 3000;
 
 // Middleware to parse JSON bodies
 app.use(bodyParser.json());
+// Middleware to parse JSON bodies
+app.use(express.text()); // -> with this POST req of app is not working
 
 // Constants
 const serialNumber = [
@@ -29,7 +31,7 @@ const firmwareNumber = [
 const publicKeyArray = [
     0x59, 0x84, 0xD4, 0x49, 0x3E, 0x99, 0x4D, 0xB9, 0xA5, 0xFF, 0x49, 0x9E, 0xCD, 0x2C, 0x04, 0xD9, 0xED, 0x63, 0xB5, 0xC0, 0x15, 0x5F, 0x87, 0x0C, 0xE2, 0x03, 0xF5, 0xC5, 0x63, 0x05, 0x41, 0xAD, 0x75, 0x29, 0x1A, 0xB5, 0xD7, 0x09, 0x45, 0x8C, 0x4B, 0xB2, 0x5F, 0xAE, 0x38, 0x35, 0x8A, 0x3A, 0x14, 0x2A, 0xE7, 0x43, 0x4F, 0x08, 0x99, 0xF3, 0x5A, 0x05, 0x28, 0x78, 0x54, 0x9A, 0xAE, 0xAC
 ];
-const publicKeyHex = Buffer.from([0x04, ...publicKeyArray]).toString('hex'); // Uncompressed public key
+const publicKeyHex = Buffer.from([0x04, ...publicKeyArray]).toString('hex');
 
 // Initialize elliptic curve
 const ec = new elliptic.ec('p256');
@@ -70,7 +72,7 @@ const verifySignature = (message, signature) => {
 
 // Routes
 
-// POST endpoint to receive immobilize data
+// Mobile App Endpoints
 app.post('/app-immobilize-data', (req, res) => {
     const { immobilizeDataMob } = req.body;
 
@@ -116,7 +118,7 @@ app.get('/app-device-data', (req, res) => {
     res.json(deviceDataMob);
 });
 
-
+// HARDWARE ENDPOINTS
 app.get('/immobilize-data', (req, res) => {
     console.log('Immobilize Data sent to hardware:', immobilizeData);
     res.json({ immobilizeData });
@@ -170,12 +172,17 @@ app.post('/device-data', (req, res) => {
 
 
 app.post('/verify', (req, res) => {
+    console.log(req.body);
+    res.status(200).send({ success: true, data: req.body });
+    return;
+
     req.on('data', (chunk) => {
         console.log('Raw Data Received:', chunk.toString());
     });
     req.on('end', () => {
         console.log('End of Request');
         try {
+            console.log(req.body);
             const data = JSON.parse(req.body);
             res.status(200).send({ success: true, data });
         } catch (error) {
