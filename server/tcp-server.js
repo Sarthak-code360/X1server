@@ -9,15 +9,15 @@ const server = net.createServer((socket) => {
     socket.on('data', (data) => {
 
         // Receive
-        console.log('Raw Data received:', data);
+        console.log('\nRaw Data received:', data);
 
         const message = data.toString('utf-8');
         const time = new Date().toISOString();
 
-        console.log('Message:', message, 'Time:', time);
+        console.log('Message:', message, '\tTime:', time, '\n');
 
         // Respond
-        socket.write(`Data received on server: ${message} at ${time}`);
+        socket.write(`Data received on server: ${message} at ${time}\n\n`);
     });
 
     socket.on('end', () => {
