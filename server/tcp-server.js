@@ -12,10 +12,9 @@ const server = net.createServer((socket) => {
         console.log('Raw Data received:', data);
 
         const message = data.toString('utf-8');
-        console.log('Message:', message);
-
         const time = new Date().toISOString();
-        console.log('Time:', time);
+
+        console.log('Message:', message, 'Time:', time);
 
         // Respond
         socket.write(`Data received on server: ${message} at ${time}`);
