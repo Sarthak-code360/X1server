@@ -11,8 +11,13 @@ server.on("connection", (socket) => {
         const time = new Date().toISOString();
         console.log(`Message: ${message} \tTime: ${time}`);
 
-        // Respond to the client
-        socket.send(`Data received on server: ${message} at ${time}`);
+        // Respond to the client with a JSON object
+        const response = {
+            status: "success",
+            message: `Data received on server: ${message}`,
+            timestamp: time
+        };
+        socket.send(JSON.stringify(response)); // Send as JSON
     });
 
     socket.on("close", () => {
@@ -24,4 +29,4 @@ server.on("connection", (socket) => {
     });
 });
 
-console.log(`WebSocket server running on ws://localhost:${PORT}`);
+console.log(`WebSocket server running on ws:${PORT}`);

@@ -12,7 +12,7 @@ async function mainMenu() {
             type: 'list',
             name: 'action',
             message: 'Choose an action:',
-            choices: ['Connect', 'Disconnect', 'Exit'],
+            choices: ws && ws.readyState === WebSocket.OPEN ? ['Select Properties', 'Disconnect', 'Exit'] : ['Connect', 'Exit'],
         },
     ]);
 
@@ -28,6 +28,9 @@ async function mainMenu() {
             break;
         case 'Exit':
             process.exit();
+            break;
+        case 'Select Properties':
+            selectProperties();
             break;
         default:
             console.log("Invalid option, please choose again.");
@@ -50,7 +53,13 @@ function connectToServer() {
     });
 
     ws.on('message', (data) => {
-        console.log('Received from server:', data);
+        const message = data.toString('utf8');
+        try {
+            const jsonResponse = JSON.parse(message);
+            console.log('\nReceived from server:', jsonResponse);
+        } catch (error) {
+            console.error('Error parsing server response:', error);
+        }
     });
 
     ws.on('close', () => {
@@ -70,6 +79,59 @@ function disconnectFromServer() {
     } else {
         console.log('Not connected to the server.');
     }
+}
+
+// Function to show the property selection menu
+async function selectProperties() {
+    const { property } = await inquirer.prompt([
+        {
+            type: 'list',
+            name: 'property',
+            message: 'Select a property to configure:',
+            choices: [
+                'Immobilize',
+                'RPM Preset',
+                'GPS',
+                'Current',
+                'Voltage',
+                'RPM',
+                'Temperature',
+                'Network Strength',
+                'Back to Main Menu'
+            ],
+        },
+    ]);
+
+    if (property === 'Back to Main Menu') {
+        mainMenu();
+    } else {
+        await enterValue(property);
+    }
+}
+
+// Function to enter value for a selected property
+async function enterValue(property) {
+    const { value } = await inquirer.prompt([
+        {
+            type: 'input',
+            name: 'value',
+            message: `Enter value for ${property}:`,
+            validate: (input) => !isNaN(input) && input !== '' ? true : 'Please enter a valid number.',
+        },
+    ]);
+
+    console.log(`Sending value: ${value} for ${property} to the server...`);
+
+    // Send the value to the server
+    if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ property, value }));
+        console.log(`Value sent: ${value} for ${property}`);
+    } else {
+        console.log('Unable to send value, not connected to the server.');
+    }
+
+    // After sending the value, show the property selection menu again
+    selectProperties();
 }
 
 // Start the CLI tool and show the menu
