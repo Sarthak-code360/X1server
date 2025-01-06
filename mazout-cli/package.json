@@ -1,0 +1,21 @@
+{
+  "name": "mazout-cli",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "bin": {
+    "mazout": "./cli.js"
+  },
+  "keywords": [],
+  "author": "Sarthak Mishra",
+  "license": "ISC",
+  "dependencies": {
+    "chalk": "^5.4.1",
+    "commander": "^13.0.0",
+    "ws": "^8.18.0"
+  }
+}
