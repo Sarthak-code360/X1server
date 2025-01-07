@@ -5,7 +5,6 @@ const WebSocket = require('ws');
 let ws;
 
 async function mainMenu() {
-    // Display the menu and capture user input
     console.log('\nWelcome to the Mazout CLI tool\n');
     const { action } = await inquirer.prompt([
         {
@@ -18,7 +17,6 @@ async function mainMenu() {
 
     console.log(`You chose to: ${action}`);
 
-    // Handle user action
     switch (action) {
         case 'Connect':
             connectToServer();
@@ -45,11 +43,11 @@ function connectToServer() {
         return;
     }
 
-    ws = new WebSocket('ws://13.233.25.158:3000'); // Connect to the WebSocket server
+    ws = new WebSocket('ws://localhost:3000'); //13.233.25.158
 
     ws.on('open', () => {
         console.log('Connected to the server');
-        mainMenu(); // Prompt for the next action
+        mainMenu();
     });
 
     ws.on('message', (data) => {
@@ -64,7 +62,7 @@ function connectToServer() {
 
     ws.on('close', () => {
         console.log('Disconnected from server');
-        mainMenu(); // Prompt for the next action
+        mainMenu();
     });
 
     ws.on('error', (error) => {
@@ -72,7 +70,6 @@ function connectToServer() {
     });
 }
 
-// Function to disconnect from the WebSocket server
 function disconnectFromServer() {
     if (ws && ws.readyState === WebSocket.OPEN) {
         ws.close();
@@ -81,7 +78,6 @@ function disconnectFromServer() {
     }
 }
 
-// Function to show the property selection menu
 async function selectProperties() {
     const { property } = await inquirer.prompt([
         {
@@ -109,7 +105,6 @@ async function selectProperties() {
     }
 }
 
-// Function to enter value for a selected property
 async function enterValue(property) {
     const { value } = await inquirer.prompt([
         {
@@ -129,10 +124,7 @@ async function enterValue(property) {
     } else {
         console.log('Unable to send value, not connected to the server.');
     }
-
-    // After sending the value, show the property selection menu again
     selectProperties();
 }
 
-// Start the CLI tool and show the menu
 mainMenu();
