@@ -3,22 +3,21 @@ const net = require('net');
 const PORT = 3000;
 
 const server = net.createServer((socket) => {
+
     console.log('Client connected!', socket.remoteAddress);
 
     socket.on('data', (data) => {
-        // Log the raw data (as Buffer)
-        console.log('Raw Data received:', data);
 
-        // Convert raw data to readable string format
-        const readableData = data.toString('utf-8');
-        console.log('Readable Data:', readableData);
+        // Receive
+        console.log('\nRaw Data received:', data);
 
-        // Log timestamp
-        const timestamp = new Date().toISOString();
-        console.log('Timestamp:', timestamp);
+        const message = data.toString('utf-8');
+        const time = new Date().toISOString();
 
-        // Respond to the hardware
-        socket.write('Data received at server!');
+        console.log('Message:', message, '\tTime:', time, '\n');
+
+        // Respond
+        socket.write(`Data received on server: ${message} at ${time}\n\n`);
     });
 
     socket.on('end', () => {

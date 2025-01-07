@@ -43,7 +43,7 @@ function connectToServer() {
         return;
     }
 
-    ws = new WebSocket('ws://localhost:3000'); //13.233.25.158
+    ws = new WebSocket('ws://13.233.25.158:3000'); //13.233.25.158
 
     ws.on('open', () => {
         console.log('Connected to the server');
