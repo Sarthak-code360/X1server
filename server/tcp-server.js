@@ -49,18 +49,34 @@ function decodePacket(buffer) {
 
 // Encode
 function encodePacket(index, payload) {
-    const buffer = Buffer.alloc(20);
-    buffer.writeUInt8(0xaa, 0); // Header
-    buffer.writeUInt8(0xbb, 1); // Header
-    buffer.writeUInt8(index, 2); // Type field
-    buffer.writeUInt8(payload.length, 3); // Length field
-    Buffer.from(payload).copy(buffer, 4); // Payload field
-    buffer.writeUInt8(0xff, payload.length + 1); // Checksum field
+    // Calculate the total buffer size
+    const bufferSize = 4 + payload.length + 1; // Header (2) + Type (1) + Length (1) + Payload + Checksum
+    const buffer = Buffer.alloc(bufferSize);
 
-    console.log('Encoded Data:', buffer);
+    // Write the header
+    buffer.writeUInt8(0xaa, 0); // Header byte 1
+    buffer.writeUInt8(0xbb, 1); // Header byte 2
+
+    // Write the type (index)
+    buffer.writeUInt8(index, 2); // Type field
+
+    // Write the length of the payload
+    buffer.writeUInt8(payload.length, 3); // Length field
+
+    // Write the payload
+    Buffer.from(payload).copy(buffer, 4); // Payload field
+
+    // Calculate the checksum (XOR of all previous bytes)
+    const checksum = buffer.slice(0, 4 + payload.length).reduce((acc, byte) => acc ^ byte, 0);
+
+    // Write the checksum
+    buffer.writeUInt8(checksum, 4 + payload.length); // Checksum field
+
+    console.log('Encoded Packet:', buffer);
 
     return buffer;
 }
+
 
 function logger(dataType, payload) {
     switch (dataType) {
@@ -122,6 +138,7 @@ const server = net.createServer((socket) => {
             socket.write(encodePacket(1, sendpacket));
             socket.write(encodePacket(2, sendpacket1));
             console.log('Data sent to client:', sendpacket);
+            console.log('Data sent to client:', sendpacket1);
 
 
             // Send acknowledgment back to the hardware
