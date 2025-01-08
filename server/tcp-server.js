@@ -132,11 +132,13 @@ const server = net.createServer((socket) => {
             logger(dataType, payload);
 
             const sendpacket = [0x2];
-            const sendpacket1 = [0x55];
+            const sendpacket1 = [0x20];
 
             console.log('Sending data to client...');
             socket.write(encodePacket(1, sendpacket));
             socket.write(encodePacket(2, sendpacket1));
+
+
             console.log('Data sent to client:', sendpacket);
             console.log('Data sent to client:', sendpacket1);
 
