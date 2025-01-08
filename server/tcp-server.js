@@ -114,9 +114,11 @@ const server = net.createServer((socket) => {
             // console.log(`Storing data for ${dataType}:`, payload.toString('hex'));
             logger(dataType, payload);
 
+            const sendpacket = [0x5, 0x6];
+
             console.log('Sending data to client...');
-            socket.write(encodePacket(1, 0x5));
-            socket.write(encodePacket(2, 0x6));
+            socket.write(encodePacket(1, sendpacket));
+            socket.write(encodePacket(2, sendpacket));
 
 
             // Send acknowledgment back to the hardware
