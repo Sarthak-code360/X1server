@@ -50,6 +50,8 @@ function encodePacket(index, payload) {
 const server = net.createServer((socket) => {
     console.log('Client connected!', socket.remoteAddress);
 
+    socket.write(("Hello").toString('utf-8'));
+
     // Receiving Process
     socket.on('data', (data) => {
         try {
