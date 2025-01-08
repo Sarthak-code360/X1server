@@ -95,7 +95,7 @@ function logger(dataType, payload) {
 
 const server = net.createServer((socket) => {
     console.log('Client connected!', socket.remoteAddress);
-    socket.write(("Hello").toString('utf-8'));
+    // socket.write(("Hello").toString('utf-8'));
 
     socket.on('data', (data) => {
         try {
@@ -118,9 +118,9 @@ const server = net.createServer((socket) => {
             const sendpacket = [0x5, 0x6];
 
             console.log('Sending data to client...');
-            socket.write(("Hello").toString('utf-8'));
-            // socket.write(encodePacket(1, sendpacket));
-            // socket.write(encodePacket(2, sendpacket));
+            socket.write(encodePacket(1, sendpacket));
+            socket.write(encodePacket(2, sendpacket));
+            console.log('Data sent to client:', sendpacket);
 
 
             // Send acknowledgment back to the hardware
