@@ -3,14 +3,14 @@ const net = require('net');
 const PORT = 3000;
 
 const DATA_TYPES = {
-    "01": "immobilize",
-    "02": "rpm preset",
-    "03": "gps",
-    "04": "current",
-    "05": "voltage",
-    "06": "rpm",
-    "07": "temperature",
-    "08": "network strength",
+    1: "immobilize",
+    2: "rpm preset",
+    3: "gps",
+    4: "current",
+    5: "voltage",
+    6: "rpm",
+    7: "temperature",
+    8: "network strength",
 };
 
 // function calculateChecksum(data) {
