@@ -13,9 +13,9 @@ const DATA_TYPES = {
     "08": "network strength",
 };
 
-function calculateChecksum(data) {
-    return data.reduce((checksum, byte) => checksum ^ byte, 0);
-}
+// function calculateChecksum(data) {
+//     return data.reduce((checksum, byte) => checksum ^ byte, 0);
+// }
 
 // Decode
 function decodePacket(buffer) {
@@ -39,10 +39,10 @@ function decodePacket(buffer) {
     // const checksum = buffer[4 + length]; // Checksum field
 
     // Verify checksum
-    const calculatedChecksum = calculateChecksum(checksum);
-    if (checksum !== calculatedChecksum) {
-        throw new Error(`Invalid checksum. Expected: 0x${calculatedChecksum.toString(16)}, Received: 0x${checksum.toString(16)}`);
-    }
+    // const calculatedChecksum = calculateChecksum(checksum);
+    // if (checksum !== calculatedChecksum) {
+    //     throw new Error(`Invalid checksum. Expected: 0x${calculatedChecksum.toString(16)}, Received: 0x${checksum.toString(16)}`);
+    // }
 
     // Identify the data type
     const dataType = DATA_TYPES[typeCode];
