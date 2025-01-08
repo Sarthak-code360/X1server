@@ -83,7 +83,7 @@ const server = net.createServer((socket) => {
         } catch (error) {
             console.error('Error sending data:', error.message);
         }
-    }, 5000); // Send data every 5 seconds
+    }, 2);
 
     socket.on('end', () => {
         console.log('Client disconnected!');
