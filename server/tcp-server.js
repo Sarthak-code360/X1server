@@ -95,6 +95,7 @@ function logger(dataType, payload) {
 
 const server = net.createServer((socket) => {
     console.log('Client connected!', socket.remoteAddress);
+    socket.write(("Hello").toString('utf-8'));
 
     socket.on('data', (data) => {
         try {
