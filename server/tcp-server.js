@@ -111,7 +111,7 @@ function logger(dataType, payload) {
 
 const server = net.createServer((socket) => {
     console.log('Client connected!', socket.remoteAddress);
-    // socket.write(("Hello").toString('utf-8'));
+    socket.write(("Hello").toString('utf-8'));
 
     socket.on('data', (data) => {
         try {
@@ -133,17 +133,14 @@ const server = net.createServer((socket) => {
 
             const sendpacket = Buffer.from([0x02]); // Correctly formatted buffer
             const sendpacket1 = Buffer.from([0x20]);
-            const sendpacket2 = Buffer.from([0x37, 0x45]);
 
             console.log('Sending data to client...');
             socket.write(encodePacket(1, sendpacket));
             socket.write(encodePacket(2, sendpacket1));
-            socket.write(encodePacket(4, sendpacket2));
 
 
             console.log('Immobilize Data sent to client:', sendpacket);
             console.log('RPM Data sent to client:', sendpacket1);
-            console.log('Current Data sent to client:', sendpacket2);
 
 
             // Send acknowledgment back to the hardware
