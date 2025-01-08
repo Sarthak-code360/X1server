@@ -11,7 +11,7 @@ const server = net.createServer((socket) => {
         // Receive
         console.log('\nRaw Data received:', data);
 
-        const message = data.toString('utf-8');
+        const message = data.toString('hex');
         const time = new Date().toISOString();
 
         console.log('Message:', message, '\tTime:', time, '\n');
