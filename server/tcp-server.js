@@ -54,7 +54,7 @@ function encodePacket(index, payload) {
     buffer.writeUInt8(0xbb, 1); // Header
     buffer.writeUInt8(index, 2); // Type field
     buffer.writeUInt8(payload.length, 3); // Length field
-    payload.copy(buffer, 4); // Payload field
+    Buffer.from(payload).copy(buffer, 4); // Payload field
     buffer.writeUInt8(0xff, payload.length + 1); // Checksum field
 
     console.log('Encoded Data:', buffer);
@@ -114,6 +114,7 @@ const server = net.createServer((socket) => {
             // console.log(`Storing data for ${dataType}:`, payload.toString('hex'));
             logger(dataType, payload);
 
+            console.log('Sending data to client...');
             socket.write(encodePacket(1, 0x5));
             socket.write(encodePacket(2, 0x6));
 
@@ -124,7 +125,7 @@ const server = net.createServer((socket) => {
             console.log('Acknowledgment sent to client:', responseMessage);
 
         } catch (error) {
-            console.error('Error decoding packet:', error.message);
+            console.error('Error in main function:', error.message);
             socket.write(`Error: ${error.message}`);
         }
     });
