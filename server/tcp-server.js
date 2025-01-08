@@ -32,12 +32,6 @@ function decodePacket(buffer) {
     const payload = buffer.slice(4, 4 + length); // Payload field
     const checksum = buffer[length + 1]; // Checksum field
 
-    // Extract fields
-    // const typeCode = buffer[2].toString(16).padStart(2, '0'); // Type field
-    // const length = buffer[3]; // Length field
-    // const payload = buffer.slice(4, 4 + length); // Payload field
-    // const checksum = buffer[4 + length]; // Checksum field
-
     // Verify checksum
     // const calculatedChecksum = calculateChecksum(checksum);
     // if (checksum !== calculatedChecksum) {
@@ -51,6 +45,18 @@ function decodePacket(buffer) {
     }
 
     return { dataType, payload };
+}
+
+// Encode
+function encodePacket(index, payload) {
+    const buffer = Buffer.alloc(20);
+    buffer.writeUInt8(0xaa, 0); // Header
+    buffer.writeUInt8(0xbb, 1); // Header
+    buffer.writeUInt8(index, 2); // Type field
+    buffer.writeUInt8(length.payload, 3); // Length field
+    payload.copy(buffer, 4); // Payload field
+    buffer.writeUInt8(0xff, length.payload + 1); // Checksum field
+    return buffer;
 }
 
 function logger(dataType, payload) {
@@ -105,9 +111,13 @@ const server = net.createServer((socket) => {
             // console.log(`Storing data for ${dataType}:`, payload.toString('hex'));
             logger(dataType, payload);
 
+            socket.write(encodePacket(1, 0x5));
+            socket.write(encodePacket(2, 0x6));
+
+
             // Send acknowledgment back to the hardware
             const responseMessage = `Data for ${dataType} received at ${time}`;
-            socket.write(responseMessage);
+            // socket.write(responseMessage);
             console.log('Acknowledgment sent to client:', responseMessage);
 
         } catch (error) {
