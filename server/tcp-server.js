@@ -56,6 +56,9 @@ function encodePacket(index, payload) {
     buffer.writeUInt8(length.payload, 3); // Length field
     payload.copy(buffer, 4); // Payload field
     buffer.writeUInt8(0xff, length.payload + 1); // Checksum field
+
+    console.log('Encoded Data:', buffer);
+
     return buffer;
 }
 
