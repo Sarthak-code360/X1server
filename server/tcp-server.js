@@ -50,7 +50,7 @@ function encodePacket(index, payload) {
 const server = net.createServer((socket) => {
     console.log('Client connected!', socket.remoteAddress);
 
-    socket.write(("Hello").toString('utf-8'));
+    // socket.write(("Hello").toString('utf-8'));
 
     // Receiving Process
     socket.on('data', (data) => {
@@ -62,7 +62,7 @@ const server = net.createServer((socket) => {
 
             console.log(`Decoded Data Type: ${dataType}`);
             console.log(`Payload: ${payload.toString('hex')}`);
-            console.log(`Time Received: ${time}`);
+            // console.log(`Time Received: ${time}`);
         } catch (error) {
             console.error('Error decoding packet:', error.message);
         }
@@ -78,8 +78,8 @@ const server = net.createServer((socket) => {
             socket.write(sendPacket2);
 
             console.log('Sent data to client:');
-            console.log('Immobilize Data:', sendPacket1);
-            console.log('RPM Data:', sendPacket2);
+            // console.log('Immobilize Data:', sendPacket1);
+            // console.log('RPM Data:', sendPacket2);
         } catch (error) {
             console.error('Error sending data:', error.message);
         }
