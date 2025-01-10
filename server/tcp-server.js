@@ -1,8 +1,9 @@
 const net = require('net');
+const { client } = require('netcat');
 const WebSocket = require('ws');
 
-const TCP_PORT = 3000;
-const WS_PORT = 4000;
+const TCP_PORT = 3050;
+const WS_PORT = 4050;
 
 const DATA_TYPES = {
     1: "immobilize",
@@ -70,12 +71,16 @@ const tcpserver = net.createServer((socket) => {
             console.log(`Decoded Data Type: ${dataType}`);
             console.log(`Payload: ${payload.toString('hex')}`);
 
+            //Broadcast received data to app
+            const message = { dataType, payload: payload.toString('hex') };
+            broadcast(message);
+
         } catch (error) {
             console.error('Error decoding packet:', error.message);
         }
     });
 
-    // Sending Process (independent)
+    // Sending Process (independent) from Server to HW
     const sendInterval = setInterval(() => {
         try {
             const sendPacket1 = encodePacket(1, Buffer.from([0x02]));
@@ -93,13 +98,15 @@ const tcpserver = net.createServer((socket) => {
     }, 2);
 
     socket.on('end', () => {
-        console.log('Client disconnected!');
+        console.log('Hardware disconnected!');
         clearInterval(sendInterval); // Clear interval when client disconnects
+        hardwareConnections.delete(socket);
     });
 
     socket.on('error', (error) => {
         console.error('Socket error:', error.message);
         clearInterval(sendInterval);
+        hardwareConnections.delete(socket);
     });
 });
 
@@ -114,4 +121,16 @@ const wss = new WebSocket.Server({ port: WS_PORT });
 wss.on('connection', ws => {
     console.log('Mobile App connected!');
     WebSocketClients.add(ws);
-})
+
+});
+
+// Broadcast to Mobile
+function broadcast(message) {
+    const jsonMessage = JSON.stringify(message);
+
+    WebSocketClients.forEach((client) => {
+        if (client.readyState == WebSocket.OPEN) {
+            client.send(jsonMessage);
+        }
+    });
+}
