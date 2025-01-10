@@ -1,6 +1,8 @@
 const net = require('net');
+const WebSocket = require('ws');
 
-const PORT = 3000;
+const TCP_PORT = 3000;
+const WS_PORT = 4000;
 
 const DATA_TYPES = {
     1: "immobilize",
@@ -12,6 +14,10 @@ const DATA_TYPES = {
     7: "temperature",
     8: "network strength",
 };
+
+// Store active connections
+const hardwareConnections = new Set();
+const WebSocketClients = new Set();
 
 function decodePacket(buffer) {
     if (buffer.length < 5) {
@@ -25,7 +31,7 @@ function decodePacket(buffer) {
     const typeCode = buffer[2];
     const length = buffer[3];
     const payload = buffer.slice(4, 4 + length);
-    const checksum = buffer[length + 1];
+    const checksum = buffer[length + 1]; // Logic needed to be updated
 
     return { dataType: DATA_TYPES[typeCode] || "unknown", payload };
 }
@@ -47,8 +53,10 @@ function encodePacket(index, payload) {
     return buffer;
 }
 
-const server = net.createServer((socket) => {
-    console.log('Client connected!', socket.remoteAddress);
+// TCP Server for HW
+const tcpserver = net.createServer((socket) => {
+    console.log('Hardware connected!', socket.remoteAddress);
+    hardwareConnections.add(socket);
 
     // socket.write(("Hello").toString('utf-8'));
 
@@ -95,6 +103,15 @@ const server = net.createServer((socket) => {
     });
 });
 
-server.listen(PORT, () => {
-    console.log(`Server listening on port ${PORT}`);
+tcpserver.listen(TCP_PORT, () => {
+    console.log(`Server listening on port ${TCP_PORT}`);
 });
+
+
+// WebSocket Server for Mobile App
+const wss = new WebSocket.Server({ port: WS_PORT });
+
+wss.on('connection', ws => {
+    console.log('Mobile App connected!');
+    WebSocketClients.add(ws);
+})
