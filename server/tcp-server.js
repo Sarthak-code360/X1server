@@ -1,3 +1,4 @@
+const { error } = require('console');
 const net = require('net');
 const { client } = require('netcat');
 const WebSocket = require('ws');
@@ -122,6 +123,35 @@ wss.on('connection', ws => {
     console.log('Mobile App connected!');
     WebSocketClients.add(ws);
 
+    ws.on('message', (message) => {
+        console.log('Received message from mobile app:', message);
+
+        // Forward to HW
+        hardwareConnections.forEach((hardwareSocket) => {
+            try {
+                const parsedMessage = JSON.parse(message);
+                const { typeCode, payload } = parsedMessage;
+
+                //Encode and send to HW
+                const hardwarePacket = encodePacket(typeCode, Buffer.from(payload));
+                hardwareSocket.write(hardwarePacket);
+                console.log('Forwarded data to hardware:', hardwarePacket);
+
+            } catch (error) {
+                console.error('Error parsing message:', error.message);
+            }
+        });
+    });
+
+    ws.on('close', () => {
+        console.log('Mobile App disconnected!');
+        WebSocketClients.delete(ws);
+    });
+
+    ws.on('error', (error) => {
+        console.error('WebSocket error:', error.message);
+        WebSocketClients.delete(ws);
+    });
 });
 
 // Broadcast to Mobile
