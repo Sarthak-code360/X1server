@@ -126,6 +126,9 @@ wss.on('connection', ws => {
     console.log('Mobile App connected!');
     WebSocketClients.add(ws);
 
+    // Send acknowledgment message
+    ws.send(JSON.stringify({ message: 'Connection established with WebSocket server on port 4050.' }));
+
     ws.on('message', (message) => {
         console.log('Received message from mobile app:', message);
 
