@@ -57,12 +57,11 @@ const server = net.createServer((socket) => {
         try {
             console.log('\nRaw Data received:', data);
 
-            const time = new Date().toISOString();
             const { dataType, payload } = decodePacket(data);
 
             console.log(`Decoded Data Type: ${dataType}`);
             console.log(`Payload: ${payload.toString('hex')}`);
-            // console.log(`Time Received: ${time}`);
+
         } catch (error) {
             console.error('Error decoding packet:', error.message);
         }
