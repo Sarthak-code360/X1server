@@ -25,7 +25,6 @@ function decodePacket(buffer) {
     if (buffer.length < 5) {
         throw new Error('Invalid packet: Too short.');
     }
-
     if (buffer[0] !== 0xaa || buffer[1] !== 0xbb) {
         throw new Error('Invalid header: Does not match 0xAA 0xBB.');
     }
@@ -33,8 +32,12 @@ function decodePacket(buffer) {
     const typeCode = buffer[2];
     const length = buffer[3];
     const payload = buffer.slice(4, 4 + length);
-    const checksum = buffer[length + 1]; // Logic needed to be updated
 
+    const checksum = buffer[length + 1];
+    const expectedChecksum = buffer.slice(0, 4 + length).reduce((acc, byte) => acc ^ byte, 0);
+    if (expectedChecksum !== checksum) {
+        throw new Error('Checksum validation failed!');
+    }
     return { dataType: DATA_TYPES[typeCode] || "unknown", payload };
 }
 
@@ -91,12 +94,12 @@ const tcpserver = net.createServer((socket) => {
             socket.write(sendPacket2);
 
             console.log('Sent data to client:');
-            // console.log('Immobilize Data:', sendPacket1);
-            // console.log('RPM Data:', sendPacket2);
+            console.log('Immobilize Data:', sendPacket1);
+            console.log('RPM Data:', sendPacket2);
         } catch (error) {
             console.error('Error sending data:', error.message);
         }
-    }, 2);
+    }, 1000);
 
     socket.on('end', () => {
         console.log('Hardware disconnected!');
