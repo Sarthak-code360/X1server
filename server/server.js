@@ -140,23 +140,34 @@ wss.on('connection', ws => {
         }
 
         const { dataType, data } = parsedMessage;
+        let encodedPacket;
 
         switch (dataType) {
             case "immobilize":
                 console.log(`Immobilize data received: ${data}`);
-                // Process immobilize data here
+                encodedPacket = encodePacket(1, Buffer.from([data]));
                 break;
 
             case "rpmPreset":
                 console.log(`RPM Preset data received: ${data}`);
-                // Process rpmPreset data here
+                encodedPacket = encodePacket(2, Buffer.from([data]));
                 break;
 
             default:
                 console.error(`Unknown data type: ${dataType}`);
+                return;
         }
-    });
 
+        // Send the encoded packet to all HW (tcp-server) connections
+        hardwareConnections.forEach((socket) => {
+            try {
+                socket.write(encodedPacket);
+                console.log(`Sent packet to hardware: ${encodedPacket}`);
+            } catch (error) {
+                console.error("Error sending data to hardware:", error.message);
+            }
+        });
+    });
 
     ws.on('close', () => {
         console.log('Mobile App disconnected!');
