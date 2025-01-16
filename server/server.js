@@ -8,13 +8,13 @@ const WS_PORT = 4050;
 
 const DATA_TYPES = {
     1: "immobilize",
-    2: "rpm preset",
+    2: "rpmPreset",
     3: "gps",
     4: "current",
     5: "voltage",
     6: "rpm",
     7: "temperature",
-    8: "network strength",
+    8: "networkStrength",
 };
 
 // Store active connections
