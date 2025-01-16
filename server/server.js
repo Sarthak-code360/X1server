@@ -129,37 +129,34 @@ wss.on('connection', ws => {
     // Send acknowledgment message
     ws.send(JSON.stringify({ message: 'Connection established with WebSocket server on port 4050.' }));
 
-    ws.on('message', (message) => {
-        console.log('Received message from mobile app:', message);
-
+    ws.on("message", (message) => {
+        console.log("Received message from Mobile App:", message);
+        let parsedMessage;
         try {
-            // Parse the incoming message
-            const parsedMessage = JSON.parse(message);
-
-            let typeCode, payload;
-            if (parsedMessage.dataType === "immobilize") {
-                typeCode = 1;
-                payload = [parsedMessage.data];
-            } else if (parsedMessage.dataType === "rpm preset") {
-                typeCode = 2;
-                payload = [parsedMessage.data];
-            } else {
-                throw new Error('Unknown data type!');
-            }
-
-            // Encode the data to be sent to hardware
-            const hardwarePacket = encodePacket(typeCode, Buffer.from(payload));
-
-            // Send the encoded data to all hardware connections
-            hardwareConnections.forEach((hardwareSocket) => {
-                hardwareSocket.write(hardwarePacket);
-                console.log('Forwarded data to hardware:', hardwarePacket);
-            });
-
+            parsedMessage = JSON.parse(message);
         } catch (error) {
-            console.error('Error processing message:', error.message);
+            console.error("Error parsing message:", error);
+            return;
+        }
+
+        const { dataType, data } = parsedMessage;
+
+        switch (dataType) {
+            case "immobilize":
+                console.log(`Immobilize data received: ${data}`);
+                // Process immobilize data here
+                break;
+
+            case "rpmPreset":
+                console.log(`RPM Preset data received: ${data}`);
+                // Process rpmPreset data here
+                break;
+
+            default:
+                console.error(`Unknown data type: ${dataType}`);
         }
     });
+
 
     ws.on('close', () => {
         console.log('Mobile App disconnected!');
