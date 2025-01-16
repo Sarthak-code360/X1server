@@ -132,21 +132,33 @@ wss.on('connection', ws => {
     ws.on('message', (message) => {
         console.log('Received message from mobile app:', message);
 
-        // Forward to HW
-        hardwareConnections.forEach((hardwareSocket) => {
-            try {
-                const parsedMessage = JSON.parse(message);
-                const { typeCode, payload } = parsedMessage;
+        try {
+            // Parse the incoming message
+            const parsedMessage = JSON.parse(message);
 
-                //Encode and send to HW
-                const hardwarePacket = encodePacket(typeCode, Buffer.from(payload));
+            let typeCode, payload;
+            if (parsedMessage.dataType === "immobilize") {
+                typeCode = 1;
+                payload = [parsedMessage.data];
+            } else if (parsedMessage.dataType === "rpm preset") {
+                typeCode = 2;
+                payload = [parsedMessage.data];
+            } else {
+                throw new Error('Unknown data type!');
+            }
+
+            // Encode the data to be sent to hardware
+            const hardwarePacket = encodePacket(typeCode, Buffer.from(payload));
+
+            // Send the encoded data to all hardware connections
+            hardwareConnections.forEach((hardwareSocket) => {
                 hardwareSocket.write(hardwarePacket);
                 console.log('Forwarded data to hardware:', hardwarePacket);
+            });
 
-            } catch (error) {
-                console.error('Error parsing message:', error.message);
-            }
-        });
+        } catch (error) {
+            console.error('Error processing message:', error.message);
+        }
     });
 
     ws.on('close', () => {
@@ -159,6 +171,7 @@ wss.on('connection', ws => {
         WebSocketClients.delete(ws);
     });
 });
+
 
 // Broadcast to Mobile
 function broadcast(message) {
