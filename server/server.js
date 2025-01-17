@@ -99,7 +99,7 @@ const tcpserver = net.createServer((socket) => {
         } catch (error) {
             console.error('Error sending data:', error.message);
         }
-    }, 1000);
+    }, 20);
 
     socket.on('end', () => {
         console.log('Hardware disconnected!');
