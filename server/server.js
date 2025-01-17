@@ -162,7 +162,7 @@ wss.on('connection', ws => {
         hardwareConnections.forEach((socket) => {
             try {
                 socket.write(encodedPacket);
-                console.log(`Sent packet to hardware: ${encodedPacket}`);
+                console.log(`Sent packet to hardware: ${encodedPacket.toString('hex')}`);
             } catch (error) {
                 console.error("Error sending data to hardware:", error.message);
             }
