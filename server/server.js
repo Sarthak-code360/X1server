@@ -34,10 +34,10 @@ function decodePacket(buffer) {
     const payload = buffer.slice(4, 4 + length);
 
     const checksum = buffer[length + 1];
-    const expectedChecksum = buffer.slice(0, 4 + length).reduce((acc, byte) => acc ^ byte, 0);
-    if (expectedChecksum !== checksum) {
-        throw new Error('Checksum validation failed!');
-    }
+    // const expectedChecksum = buffer.slice(0, 4 + length).reduce((acc, byte) => acc ^ byte, 0);
+    // if (expectedChecksum !== checksum) {
+    //     throw new Error('Checksum validation failed!');
+    // }
     return { dataType: DATA_TYPES[typeCode] || "unknown", payload };
 }
 
@@ -99,7 +99,7 @@ const tcpserver = net.createServer((socket) => {
         } catch (error) {
             console.error('Error sending data:', error.message);
         }
-    }, 20);
+    }, 20000);
 
     socket.on('end', () => {
         console.log('Hardware disconnected!');
