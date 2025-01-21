@@ -97,13 +97,13 @@ const tcpserver = net.createServer((socket) => {
             socket.write(sendPacket1);
             socket.write(sendPacket2);
 
-            console.log('Sent data to client:');
+            // console.log('Sent data to client!');
             // console.log('Immobilize Data:', sendPacket1);
             // console.log('RPM Data:', sendPacket2);
         } catch (error) {
             console.error('Error sending data:', error.message);
         }
-    }, 20000);
+    }, 2);
 
     socket.on('end', () => {
         console.log('Hardware disconnected!');
