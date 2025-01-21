@@ -54,7 +54,7 @@ function encodePacket(index, payload) {
     const checksum = buffer.slice(0, 4 + payload.length).reduce((acc, byte) => acc ^ byte, 0);
     buffer.writeUInt8(checksum, 4 + payload.length);
 
-    console.log('Encoded Packet:', buffer);
+    // console.log('Encoded Packet:', buffer);
     return buffer;
 }
 
@@ -68,7 +68,7 @@ const tcpserver = net.createServer((socket) => {
     // Receiving Process
     socket.on('data', (data) => {
         try {
-            console.log('\nRaw Data received:', data);
+            // console.log('\nRaw Data received:', data);
 
             const { dataType, payload } = decodePacket(data);
 
@@ -94,8 +94,8 @@ const tcpserver = net.createServer((socket) => {
             socket.write(sendPacket2);
 
             console.log('Sent data to client:');
-            console.log('Immobilize Data:', sendPacket1);
-            console.log('RPM Data:', sendPacket2);
+            // console.log('Immobilize Data:', sendPacket1);
+            // console.log('RPM Data:', sendPacket2);
         } catch (error) {
             console.error('Error sending data:', error.message);
         }
