@@ -146,11 +146,13 @@ wss.on('connection', ws => {
             case "immobilize":
                 console.log(`Immobilize data received: ${data}`);
                 encodedPacket = encodePacket(1, Buffer.from([data]));
+                console.log('Im Encoded Packet:', encodedPacket);
                 break;
 
             case "rpmPreset":
                 console.log(`RPM Preset data received: ${data}`);
                 encodedPacket = encodePacket(2, Buffer.from([data]));
+                console.log('RPM Encoded Packet:', encodedPacket);
                 break;
 
             default:
