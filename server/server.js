@@ -139,19 +139,19 @@ wss.on('connection', ws => {
             return;
         }
 
-        const { dataType, data } = parsedMessage;
+        const { dataType, value } = parsedMessage;
         let encodedPacket;
 
         switch (dataType) {
             case "immobilize":
-                console.log(`Immobilize data received: ${data}`);
-                encodedPacket = encodePacket(1, Buffer.from([data]));
+                console.log(`Immobilize data received: ${value}`);
+                encodedPacket = encodePacket(1, Buffer.from([value]));
                 console.log('Im Encoded Packet:', encodedPacket);
                 break;
 
             case "rpmPreset":
-                console.log(`RPM Preset data received: ${data}`);
-                encodedPacket = encodePacket(2, Buffer.from([data]));
+                console.log(`RPM Preset data received: ${value}`);
+                encodedPacket = encodePacket(2, Buffer.from([value]));
                 console.log('RPM Encoded Packet:', encodedPacket);
                 break;
 
