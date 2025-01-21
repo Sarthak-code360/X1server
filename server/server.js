@@ -10,11 +10,15 @@ const DATA_TYPES = {
     1: "immobilize",
     2: "rpmPreset",
     3: "gps",
-    4: "current",
-    5: "voltage",
+    4: "busCurrent",
+    5: "busVoltage",
     6: "rpm",
-    7: "temperature",
+    7: "deviceTemperature",
     8: "networkStrength",
+    9: "torque",
+    10: "SOC",
+    11: "throttle",
+    12: "motorTemperature",
 };
 
 // Store active connections
