@@ -89,21 +89,21 @@ const tcpserver = net.createServer((socket) => {
     });
 
     // Sending Process (independent) from Server to HW
-    // const sendInterval = setInterval(() => {
-    //     try {
-    //         const sendPacket1 = encodePacket(1, Buffer.from([0x02]));
-    //         const sendPacket2 = encodePacket(2, Buffer.from([0x20]));
+    const sendInterval = setInterval(() => {
+        try {
+            const sendPacket1 = encodePacket(1, Buffer.from([0x02]));
+            const sendPacket2 = encodePacket(2, Buffer.from([0x20]));
 
-    //         socket.write(sendPacket1);
-    //         socket.write(sendPacket2);
+            socket.write(sendPacket1);
+            socket.write(sendPacket2);
 
-    //         // console.log('Sent data to client!');
-    //         // console.log('Immobilize Data:', sendPacket1);
-    //         // console.log('RPM Data:', sendPacket2);
-    //     } catch (error) {
-    //         console.error('Error sending data:', error.message);
-    //     }
-    // }, 2);
+            // console.log('Sent data to client!');
+            // console.log('Immobilize Data:', sendPacket1);
+            // console.log('RPM Data:', sendPacket2);
+        } catch (error) {
+            console.error('Error sending data:', error.message);
+        }
+    }, 2);
 
     socket.on('end', () => {
         console.log('Hardware disconnected!');
