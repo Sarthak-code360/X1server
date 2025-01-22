@@ -4,6 +4,38 @@ const WebSocket = require('ws');
 // Store the WebSocket connection
 let ws;
 
+const DATA_TYPES = {
+    1: "immobilize",
+    2: "rpmPreset",
+    3: "gps",
+    4: "busCurrent",
+    5: "busVoltage",
+    6: "rpm",
+    7: "deviceTemperature",
+    8: "networkStrength",
+    9: "torque",
+    10: "SOC",
+    11: "throttle",
+    12: "motorTemperature",
+};
+
+// Function to encode packets
+function encodePacket(index, payload) {
+    const bufferSize = 4 + payload.length + 1;
+    const buffer = Buffer.alloc(bufferSize);
+
+    buffer.writeUInt8(0xaa, 0);
+    buffer.writeUInt8(0xbb, 1);
+    buffer.writeUInt8(index, 2);
+    buffer.writeUInt8(payload.length, 3);
+    Buffer.from(payload).copy(buffer, 4);
+
+    const checksum = buffer.slice(0, 4 + payload.length).reduce((acc, byte) => acc ^ byte, 0);
+    buffer.writeUInt8(checksum, 4 + payload.length);
+
+    return buffer;
+}
+
 async function mainMenu() {
     console.log('\nWelcome to the Mazout CLI tool\n');
     const { action } = await inquirer.prompt([
@@ -15,7 +47,7 @@ async function mainMenu() {
         },
     ]);
 
-    console.log(`You chose to: ${action}`);
+    console.log(`You choose to: ${action}`);
 
     switch (action) {
         case 'Connect':
@@ -85,14 +117,7 @@ async function selectProperties() {
             name: 'property',
             message: 'Select a property to configure:',
             choices: [
-                'Immobilize',
-                'RPM Preset',
-                'GPS',
-                'Current',
-                'Voltage',
-                'RPM',
-                'Temperature',
-                'Network Strength',
+                ...Object.values(DATA_TYPES),
                 'Back to Main Menu'
             ],
         },
@@ -105,7 +130,15 @@ async function selectProperties() {
     }
 }
 
+// Enter value for the selected property
 async function enterValue(property) {
+    const index = Object.keys(DATA_TYPES).find((key) => DATA_TYPES[key] === property);
+
+    if (!index) {
+        console.log('Invalid property selected.');
+        return selectProperties();
+    }
+
     const { value } = await inquirer.prompt([
         {
             type: 'input',
@@ -115,12 +148,13 @@ async function enterValue(property) {
         },
     ]);
 
-    console.log(`Sending value: ${value} for ${property} to the server...`);
+    console.log(`Encoding and sending value: ${value} for ${property} to the server...`);
 
-    // Send the value to the server
+    // Encode the data and send to the server
+    const encodedData = encodePacket(parseInt(index), value.toString());
     if (ws && ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({ property, value }));
-        console.log(`Value sent: ${value} for ${property}`);
+        ws.send(encodedData);
+        console.log(`Encoded data sent: ${encodedData.toString('hex')}`);
     } else {
         console.log('Unable to send value, not connected to the server.');
     }
