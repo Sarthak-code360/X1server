@@ -95,7 +95,7 @@ function connectToServer() {
         return;
     }
 
-    ws = new WebSocket('ws://13.233.25.158:4050');
+    ws = new WebSocket('ws://13.232.19.209:3050'); // act as HW
 
     ws.on('open', () => {
         console.log('Connected to the WebSocket server.');
