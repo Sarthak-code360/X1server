@@ -58,10 +58,10 @@ function encodePacket(index, payload) {
     const buffer = Buffer.alloc(bufferSize);
 
     // Write fixed header
-    buffer.writeUInt8(0xaa, 0); // Header byte 1
-    buffer.writeUInt8(0xbb, 1); // Header byte 2
-    buffer.writeUInt8(index, 2); // Index byte
-    buffer.writeUInt8(payloadLength, 3); // Length byte
+    buffer.writeUInt8(0xaa, 0);
+    buffer.writeUInt8(0xbb, 1);
+    buffer.writeUInt8(index, 2);
+    buffer.writeUInt8(payloadLength, 3);
 
     // Copy the payload into the buffer
     Buffer.from(payload).copy(buffer, 4);
