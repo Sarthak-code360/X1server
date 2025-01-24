@@ -101,8 +101,8 @@ const tcpserver = net.createServer((socket) => {
             // Send packets to hardware
             socket.write(immobilizationPacket);
             socket.write(rpmPresetPacket);
-            console.log(`Sent Immobilization Packet: ${immobilizationPacket.toString('hex')}`);
-            console.log(`Sent RPM preset Packet: ${rpmPresetPacket.toString('hex')}`);
+            // console.log(`Sent Immobilization Packet: ${immobilizationPacket.toString('hex')}`);
+            // console.log(`Sent RPM preset Packet: ${rpmPresetPacket.toString('hex')}`);
 
         } catch (error) {
             console.error('Error sending data:', error.message);
