@@ -25,6 +25,9 @@ const DATA_TYPES = {
 const hardwareConnections = new Set();
 const WebSocketClients = new Set();
 
+let immobilizationPacket = encodePacket(1, Buffer.from([0])); // Default 'unlock'
+let rpmPresetPacket = encodePacket(2, Buffer.from([0])); // Default to 0
+
 function decodePacket(buffer) {
     if (buffer.length < 5) {
         throw new Error('Invalid packet: Too short.');
@@ -89,21 +92,18 @@ const tcpserver = net.createServer((socket) => {
     });
 
     // Sending Process (independent) from Server to HW
-    // const sendInterval = setInterval(() => {
-    //     try {
-    //         const sendPacket1 = encodePacket(1, Buffer.from([0x02]));
-    //         const sendPacket2 = encodePacket(2, Buffer.from([0x20]));
+    const sendInterval = setInterval(() => {
+        try {
+            // Send packets to hardware
+            socket.write(immobilizationPacket);
+            socket.write(rpmPresetPacket);
+            console.log(`Sent Immobilization Packet: ${immobilizationPacket}`);
+            console.log(`Sent RPM preset Packet: ${rpmPresetPacket}`);
 
-    //         socket.write(sendPacket1);
-    //         socket.write(sendPacket2);
-
-    //         // console.log('Sent data to client!');
-    //         // console.log('Immobilize Data:', sendPacket1);
-    //         // console.log('RPM Data:', sendPacket2);
-    //     } catch (error) {
-    //         console.error('Error sending data:', error.message);
-    //     }
-    // }, 2);
+        } catch (error) {
+            console.error('Error sending data:', error.message);
+        }
+    }, 2);
 
     socket.on('end', () => {
         console.log('Hardware disconnected!');
@@ -148,15 +148,15 @@ wss.on('connection', ws => {
 
         switch (dataType) {
             case "immobilize":
-                console.log(`Immobilize data received: ${value}`);
-                encodedPacket = encodePacket(1, Buffer.from([value]));
-                console.log('Im Encoded Packet:', encodedPacket);
+                console.log(`Updated immobilization value: ${value}`);
+                immobilizationPacket = encodePacket(1, Buffer.from([value]));
+                console.log('New Immobilization Packet:', immobilizationPacket.toString('hex'));
                 break;
 
             case "rpmPreset":
-                console.log(`RPM Preset data received: ${value}`);
-                encodedPacket = encodePacket(2, Buffer.from([value]));
-                console.log('RPM Encoded Packet:', encodedPacket);
+                console.log(`Updated RPM preset value: ${value}`);
+                rpmPresetPacket = encodePacket(2, Buffer.from([value]));
+                console.log('New RPM Packet:', rpmPresetPacket.toString('hex'));
                 break;
 
             default:
