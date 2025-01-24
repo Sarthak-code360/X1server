@@ -1,6 +1,5 @@
 const { error } = require('console');
 const net = require('net');
-const { client } = require('netcat');
 const WebSocket = require('ws');
 
 const TCP_PORT = 3050;
@@ -40,11 +39,7 @@ function decodePacket(buffer) {
     const length = buffer[3];
     const payload = buffer.slice(4, 4 + length);
 
-    const checksum = buffer[length + 1];
-    // const expectedChecksum = buffer.slice(0, 4 + length).reduce((acc, byte) => acc ^ byte, 0);
-    // if (expectedChecksum !== checksum) {
-    //     throw new Error('Checksum validation failed!');
-    // }
+    const checksum = buffer[length + 4];
     return { dataType: DATA_TYPES[typeCode] || "unknown", payload };
 }
 
@@ -61,7 +56,6 @@ function encodePacket(index, payload) {
     const checksum = buffer.slice(0, 4 + payload.length).reduce((acc, byte) => acc ^ byte, 0);
     buffer.writeUInt8(checksum, 4 + payload.length);
 
-    // console.log('Encoded Packet:', buffer);
     return buffer;
 }
 
@@ -70,19 +64,14 @@ const tcpserver = net.createServer((socket) => {
     console.log('Hardware connected!', socket.remoteAddress);
     hardwareConnections.add(socket);
 
-    // socket.write(("Hello").toString('utf-8'));
-
     // Receiving Process
     socket.on('data', (data) => {
         try {
-            // console.log('\nRaw Data received:', data);
-
             const { dataType, payload } = decodePacket(data);
-
             console.log(`Decoded Data Type: ${dataType}`);
             console.log(`Payload: ${payload.toString('hex')}`);
 
-            //Broadcast received data to app
+            // Broadcast received data to app
             const message = { dataType, payload: payload.toString('hex') };
             broadcast(message);
 
@@ -97,8 +86,8 @@ const tcpserver = net.createServer((socket) => {
             // Send packets to hardware
             socket.write(immobilizationPacket);
             socket.write(rpmPresetPacket);
-            console.log(`Sent Immobilization Packet: ${immobilizationPacket}`);
-            console.log(`Sent RPM preset Packet: ${rpmPresetPacket}`);
+            console.log(`Sent Immobilization Packet: ${immobilizationPacket.toString('hex')}`);
+            console.log(`Sent RPM preset Packet: ${rpmPresetPacket.toString('hex')}`);
 
         } catch (error) {
             console.error('Error sending data:', error.message);
@@ -122,7 +111,6 @@ tcpserver.listen(TCP_PORT, () => {
     console.log(`Server listening on port ${TCP_PORT}`);
 });
 
-
 // WebSocket Server for Mobile App
 const wss = new WebSocket.Server({ port: WS_PORT });
 
@@ -144,24 +132,38 @@ wss.on('connection', ws => {
         }
 
         const { dataType, value } = parsedMessage;
+        if (!dataType || value === undefined) {
+            console.error("Invalid message format.");
+            return;
+        }
+
+        // Convert value to HEX buffer with proper size
+        const valueBuffer = value > 255
+            ? Buffer.from([(value >> 8) & 0xff, value & 0xff]) // Multi-byte value (Big Endian)
+            : Buffer.from([value]); // Single-byte value
+
         let encodedPacket;
+        try {
+            switch (dataType) {
+                case "immobilize":
+                    console.log(`Updated immobilization value: ${value}`);
+                    immobilizationPacket = encodePacket(1, valueBuffer);
+                    console.log('New Immobilization Packet:', immobilizationPacket.toString('hex'));
+                    break;
 
-        switch (dataType) {
-            case "immobilize":
-                console.log(`Updated immobilization value: ${value}`);
-                immobilizationPacket = encodePacket(1, Buffer.from([value]));
-                console.log('New Immobilization Packet:', immobilizationPacket.toString('hex'));
-                break;
+                case "rpmPreset":
+                    console.log(`Updated RPM preset value: ${value}`);
+                    rpmPresetPacket = encodePacket(2, valueBuffer);
+                    console.log('New RPM Packet:', rpmPresetPacket.toString('hex'));
+                    break;
 
-            case "rpmPreset":
-                console.log(`Updated RPM preset value: ${value}`);
-                rpmPresetPacket = encodePacket(2, Buffer.from([value]));
-                console.log('New RPM Packet:', rpmPresetPacket.toString('hex'));
-                break;
-
-            default:
-                console.error(`Unknown data type: ${dataType}`);
-                return;
+                default:
+                    console.error(`Unknown data type: ${dataType}`);
+                    return;
+            }
+        } catch (err) {
+            console.error("Error encoding packet:", err.message);
+            return;
         }
 
         // Send the encoded packet to all HW (tcp-server) connections
@@ -185,7 +187,6 @@ wss.on('connection', ws => {
         WebSocketClients.delete(ws);
     });
 });
-
 
 // Broadcast to Mobile
 function broadcast(message) {
