@@ -44,20 +44,35 @@ function decodePacket(buffer) {
 }
 
 function encodePacket(index, payload) {
-    const bufferSize = 4 + payload.length + 1;
+    // Determine the correct length based on the index
+    let payloadLength;
+    if (index === 1) {
+        payloadLength = 1; // Immobilize packets always have a single byte
+    } else if (index === 2) {
+        payloadLength = 2; // RPM preset packets always have two bytes
+    } else {
+        payloadLength = payload.length; // Default: use the actual payload length
+    }
+
+    const bufferSize = 4 + payloadLength + 1; // Header (4) + Payload + Checksum (1)
     const buffer = Buffer.alloc(bufferSize);
 
-    buffer.writeUInt8(0xaa, 0);
-    buffer.writeUInt8(0xbb, 1);
-    buffer.writeUInt8(index, 2);
-    buffer.writeUInt8(payload.length, 3);
+    // Write fixed header
+    buffer.writeUInt8(0xaa, 0); // Header byte 1
+    buffer.writeUInt8(0xbb, 1); // Header byte 2
+    buffer.writeUInt8(index, 2); // Index byte
+    buffer.writeUInt8(payloadLength, 3); // Length byte
+
+    // Copy the payload into the buffer
     Buffer.from(payload).copy(buffer, 4);
 
-    const checksum = buffer.slice(0, 4 + payload.length).reduce((acc, byte) => acc ^ byte, 0);
-    buffer.writeUInt8(checksum, 4 + payload.length);
+    // Calculate and write checksum
+    const checksum = buffer.slice(0, 4 + payloadLength).reduce((acc, byte) => acc ^ byte, 0);
+    buffer.writeUInt8(checksum, 4 + payloadLength);
 
     return buffer;
 }
+
 
 // TCP Server for HW
 const tcpserver = net.createServer((socket) => {
