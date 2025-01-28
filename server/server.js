@@ -163,12 +163,14 @@ wss.on('connection', ws => {
                 case "immobilize":
                     console.log(`Updated immobilization value: ${value}`);
                     immobilizationPacket = encodePacket(1, valueBuffer);
+                    encodedPacket = immobilizationPacket;
                     console.log('New Immobilization Packet:', immobilizationPacket.toString('hex'));
                     break;
 
                 case "rpmPreset":
                     console.log(`Updated RPM preset value: ${value}`);
                     rpmPresetPacket = encodePacket(2, valueBuffer);
+                    encodedPacket = rpmPresetPacket;
                     console.log('New RPM Packet:', rpmPresetPacket.toString('hex'));
                     break;
 
@@ -179,6 +181,11 @@ wss.on('connection', ws => {
         } catch (err) {
             console.error("Error encoding packet:", err.message);
             return;
+        }
+
+        if (!encodedPacket) {
+            console.error("No packet to send. Skipping hardware communication.");
+            return; // Ensure we don't proceed with undefined packets
         }
 
         // Send the encoded packet to all HW (tcp-server) connections
