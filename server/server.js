@@ -1,4 +1,3 @@
-const { error } = require('console');
 const net = require('net');
 const WebSocket = require('ws');
 
@@ -44,38 +43,34 @@ function decodePacket(buffer) {
 }
 
 function encodePacket(index, payload) {
-    if (!payload || !Buffer.isBuffer(payload)) {
-        throw new Error("Invalid payload: Must be a Buffer instance.");
-    }
-
+    // Determine the correct length based on the index
     let payloadLength;
-    if (index === 1) payloadLength = 1; // Immobilize packets always 1 byte
-    else if (index === 2) payloadLength = 2; // RPM preset packets always 2 bytes
-    else payloadLength = payload.length;
-
-    if (payload.length !== payloadLength) {
-        throw new Error(`Payload length mismatch: Expected ${payloadLength}, got ${payload.length}`);
+    if (index === 1) {
+        payloadLength = 1;
+    } else if (index === 2) {
+        payloadLength = 2;
+    } else {
+        payloadLength = payload.length;
     }
 
     const bufferSize = 4 + payloadLength + 1; // Header (4) + Payload + Checksum (1)
     const buffer = Buffer.alloc(bufferSize);
 
-    // Write header
+    // Write fixed header
     buffer.writeUInt8(0xaa, 0);
     buffer.writeUInt8(0xbb, 1);
     buffer.writeUInt8(index, 2);
     buffer.writeUInt8(payloadLength, 3);
 
-    // Write payload
-    payload.copy(buffer, 4);
+    // Copy the payload into the buffer
+    Buffer.from(payload).copy(buffer, 4);
 
-    // Calculate checksum
+    // Calculate and write checksum
     const checksum = buffer.slice(0, 4 + payloadLength).reduce((acc, byte) => acc ^ byte, 0);
     buffer.writeUInt8(checksum, 4 + payloadLength);
 
     return buffer;
 }
-
 
 // TCP Server for HW
 const tcpserver = net.createServer((socket) => {
@@ -98,24 +93,17 @@ const tcpserver = net.createServer((socket) => {
         }
     });
 
+
     const sendInterval = setInterval(() => {
         try {
-            if (immobilizationPacket && Buffer.isBuffer(immobilizationPacket)) {
-                socket.write(immobilizationPacket);
-            } else {
-                console.error("Invalid immobilization packet, skipping...");
-            }
+            // Send packets to hardware
+            socket.write(immobilizationPacket);
+            socket.write(rpmPresetPacket);
 
-            if (rpmPresetPacket && Buffer.isBuffer(rpmPresetPacket)) {
-                socket.write(rpmPresetPacket);
-            } else {
-                console.error("Invalid RPM preset packet, skipping...");
-            }
         } catch (error) {
             console.error('Error sending data:', error.message);
         }
     }, 2);
-
 
     socket.on('end', () => {
         console.log('Hardware disconnected!');
@@ -193,7 +181,7 @@ wss.on('connection', ws => {
 
         if (!encodedPacket) {
             console.error("No packet to send. Skipping hardware communication.");
-            return; // Ensure we don't proceed with undefined packets
+            return;
         }
 
         // Send the encoded packet to all HW (tcp-server) connections
