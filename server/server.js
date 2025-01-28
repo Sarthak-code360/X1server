@@ -44,29 +44,32 @@ function decodePacket(buffer) {
 }
 
 function encodePacket(index, payload) {
-    // Determine the correct length based on the index
+    if (!payload || !Buffer.isBuffer(payload)) {
+        throw new Error("Invalid payload: Must be a Buffer instance.");
+    }
+
     let payloadLength;
-    if (index === 1) {
-        payloadLength = 1; // Immobilize packets always have a single byte
-    } else if (index === 2) {
-        payloadLength = 2; // RPM preset packets always have two bytes
-    } else {
-        payloadLength = payload.length; // Default: use the actual payload length
+    if (index === 1) payloadLength = 1; // Immobilize packets always 1 byte
+    else if (index === 2) payloadLength = 2; // RPM preset packets always 2 bytes
+    else payloadLength = payload.length;
+
+    if (payload.length !== payloadLength) {
+        throw new Error(`Payload length mismatch: Expected ${payloadLength}, got ${payload.length}`);
     }
 
     const bufferSize = 4 + payloadLength + 1; // Header (4) + Payload + Checksum (1)
     const buffer = Buffer.alloc(bufferSize);
 
-    // Write fixed header
+    // Write header
     buffer.writeUInt8(0xaa, 0);
     buffer.writeUInt8(0xbb, 1);
     buffer.writeUInt8(index, 2);
     buffer.writeUInt8(payloadLength, 3);
 
-    // Copy the payload into the buffer
-    Buffer.from(payload).copy(buffer, 4);
+    // Write payload
+    payload.copy(buffer, 4);
 
-    // Calculate and write checksum
+    // Calculate checksum
     const checksum = buffer.slice(0, 4 + payloadLength).reduce((acc, byte) => acc ^ byte, 0);
     buffer.writeUInt8(checksum, 4 + payloadLength);
 
@@ -95,19 +98,24 @@ const tcpserver = net.createServer((socket) => {
         }
     });
 
-    // Sending Process (independent) from Server to HW
     const sendInterval = setInterval(() => {
         try {
-            // Send packets to hardware
-            socket.write(immobilizationPacket);
-            socket.write(rpmPresetPacket);
-            // console.log(`Sent Immobilization Packet: ${immobilizationPacket.toString('hex')}`);
-            // console.log(`Sent RPM preset Packet: ${rpmPresetPacket.toString('hex')}`);
+            if (immobilizationPacket && Buffer.isBuffer(immobilizationPacket)) {
+                socket.write(immobilizationPacket);
+            } else {
+                console.error("Invalid immobilization packet, skipping...");
+            }
 
+            if (rpmPresetPacket && Buffer.isBuffer(rpmPresetPacket)) {
+                socket.write(rpmPresetPacket);
+            } else {
+                console.error("Invalid RPM preset packet, skipping...");
+            }
         } catch (error) {
             console.error('Error sending data:', error.message);
         }
     }, 2);
+
 
     socket.on('end', () => {
         console.log('Hardware disconnected!');
