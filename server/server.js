@@ -73,13 +73,18 @@ function encodePacket(index, payload) {
 }
 
 function processGPSData(gpsString) {
-    const [gpsLat, gpsLong] = gpsString.split(',').map((value) => value.trim());
-    if (!gpsLat || !gpsLong) {
+    const [gpsLat, gpsLongRaw] = gpsString.split(',').map(value => value.trim());
+    if (!gpsLat || !gpsLongRaw) {
         console.error(`Invalid GPS data: ${gpsString}`);
         return null;
     }
+
+    // Remove non-numeric and non-decimal characters from gpsLong
+    const gpsLong = gpsLongRaw.match(/-?\d+\.\d+/)?.[0] || '';
+
     return { gpsLat, gpsLong };
 }
+
 
 // TCP Server for HW
 const tcpserver = net.createServer((socket) => {
@@ -232,6 +237,8 @@ function broadcast(message) {
     WebSocketClients.forEach((client) => {
         if (client.readyState == WebSocket.OPEN) {
             client.send(jsonMessage);
+        } else {
+            WebSocketClients.delete(client); // Remove inactive clients
         }
     });
 }
