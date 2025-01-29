@@ -72,6 +72,15 @@ function encodePacket(index, payload) {
     return buffer;
 }
 
+function processGPSData(gpsString) {
+    const [gpsLat, gpsLong] = gpsString.split(',').map((value) => value.trim());
+    if (!gpsLat || !gpsLong) {
+        console.error(`Invalid GPS data: ${gpsString}`);
+        return null;
+    }
+    return { gpsLat, gpsLong };
+}
+
 // TCP Server for HW
 const tcpserver = net.createServer((socket) => {
     console.log('Hardware connected!', socket.remoteAddress);
@@ -84,10 +93,20 @@ const tcpserver = net.createServer((socket) => {
             console.log(`Decoded Data Type: ${dataType}`);
             console.log(`Payload: ${payload.toString('hex')}`);
 
-            // Broadcast received data to app
-            const message = { dataType, payload: payload.toString('hex') };
-            broadcast(message);
-
+            if (dataType === "gps") {
+                const gpsData = processGPSData(payload.toString());
+                if (gpsData) {
+                    console.log("GPS Data:", gpsData);
+                    // Broadcast gps data to app
+                    broadcast({ dataType, ...gpsData });
+                } else {
+                    console.error("Invalid GPS data received.");
+                }
+            } else {
+                // Broadcast other received data to app
+                const message = { dataType, payload: payload.toString('hex') };
+                broadcast(message);
+            }
         } catch (error) {
             console.error('Error decoding packet:', error.message);
         }
