@@ -108,7 +108,7 @@ const tcpserver = net.createServer((socket) => {
         try {
             const { dataType, payload } = decodePacket(data);
             console.log(`Decoded Data Type: ${dataType}`);
-            console.log(`Payload: ${payload.toString('hex')}`);
+            console.log(`Payload: ${payload}`);
 
             let processedPayload;
 
