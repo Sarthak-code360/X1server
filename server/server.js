@@ -109,7 +109,9 @@ const tcpserver = net.createServer((socket) => {
                 }
             } else {
                 // Broadcast other received data to app
-                const message = { dataType, payload: payload.toString('hex') };
+                const payloadDec = parseInt(payload.toString('hex'), 16);
+                console.log(`Decoded Payload: ${payloadDec}`);
+                const message = { dataType, payload: payloadDec };
                 broadcast(message);
             }
         } catch (error) {
