@@ -85,6 +85,18 @@ function processGPSData(gpsString) {
     return { gpsLat, gpsLong };
 }
 
+function convertHexToDecimal(payload) {
+    if (payload.length !== 2) {
+        console.error("Invalid payload length for conversion");
+        return null;
+    }
+
+    const firstByte = parseInt(payload[0], 16);  // Convert first byte from HEX to DEC
+    const secondByte = parseInt(payload[1], 16); // Convert second byte from HEX to DEC
+
+    return `${firstByte}.${secondByte}`; // Combine with decimal point
+}
+
 
 // TCP Server for HW
 const tcpserver = net.createServer((socket) => {
@@ -98,6 +110,16 @@ const tcpserver = net.createServer((socket) => {
             console.log(`Decoded Data Type: ${dataType}`);
             console.log(`Payload: ${payload.toString('hex')}`);
 
+            let processedPayload;
+
+            if (["busCurrent", "busVoltage", "SOC", "throttle"].includes(dataType)) {
+                processedPayload = convertHexToDecimal(payload.toString('hex'));
+                console.log(`Processed Payload: ${processedPayload}`);
+            } else {
+                processedPayload = payload.toString('hex');
+                console.log(`Processed Payload: ${processedPayload}`);
+            }
+
             if (dataType === "gps") {
                 const gpsData = processGPSData(payload.toString());
                 if (gpsData) {
@@ -109,9 +131,7 @@ const tcpserver = net.createServer((socket) => {
                 }
             } else {
                 // Broadcast other received data to app
-                const payloadDec = parseInt(payload.toString('hex'), 16);
-                console.log(`Decoded Payload: ${payloadDec}`);
-                const message = { dataType, payload: payloadDec };
+                const message = { dataType, payload: processedPayload };
                 broadcast(message);
             }
         } catch (error) {
