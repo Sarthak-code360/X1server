@@ -86,13 +86,13 @@ function processGPSData(gpsString) {
 }
 
 function convertHexToDecimal(payload) {
-    if (payload.length !== 2) {
-        console.error("Invalid payload length for conversion");
+    if (!Buffer.isBuffer(payload) || payload.length !== 2) {
+        console.error("Invalid payload length for conversion", payload);
         return null;
     }
 
-    const firstByte = parseInt(payload[0], 16);
-    const secondByte = parseInt(payload[1], 16);
+    const firstByte = payload.readUInt8(0);  // Extract first byte as decimal
+    const secondByte = payload.readUInt8(1); // Extract second byte as decimal
 
     return `${firstByte}.${secondByte}`; // Combine with decimal point
 }
@@ -112,13 +112,13 @@ const tcpserver = net.createServer((socket) => {
 
             let processedPayload;
 
-            if (["busCurrent", "busVoltage", "SOC", "throttle"].includes(dataType)) {
+            if (["busCurrent", "Throttle", "SOC", "busVoltage"].includes(dataType)) {
                 processedPayload = convertHexToDecimal(payload);
-                console.log(`Processed Payload: ${processedPayload}`);
             } else {
-                processedPayload = payload.toString('hex');
-                console.log(`Processed Payload: ${processedPayload}`);
+                processedPayload = payload.toString('hex'); // Keep other data types as hex
             }
+
+            console.log(`Processed Payload: ${processedPayload}`);
 
             if (dataType === "gps") {
                 const gpsData = processGPSData(payload.toString());
