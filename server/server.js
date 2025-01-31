@@ -91,8 +91,8 @@ function convertHexToDecimal(payload) {
         return null;
     }
 
-    const firstByte = parseInt(payload[0], 16);  // Convert first byte from HEX to DEC
-    const secondByte = parseInt(payload[1], 16); // Convert second byte from HEX to DEC
+    const firstByte = parseInt(payload[0], 16);
+    const secondByte = parseInt(payload[1], 16);
 
     return `${firstByte}.${secondByte}`; // Combine with decimal point
 }
@@ -113,7 +113,7 @@ const tcpserver = net.createServer((socket) => {
             let processedPayload;
 
             if (["busCurrent", "busVoltage", "SOC", "throttle"].includes(dataType)) {
-                processedPayload = convertHexToDecimal(payload.toString('hex'));
+                processedPayload = convertHexToDecimal(payload);
                 console.log(`Processed Payload: ${processedPayload}`);
             } else {
                 processedPayload = payload.toString('hex');
