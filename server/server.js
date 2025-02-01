@@ -108,7 +108,9 @@ const tcpserver = net.createServer((socket) => {
     // Receiving Process
     socket.on('data', (data) => {
         try {
+            console.log('Received data:', data.toString('hex'));
             const { dataType, payload } = decodePacket(data);
+
 
             console.log(`Decoded Data Type: ${dataType}`);
             console.log(`Payload: ${payload.toString('hex')}`); // i recive aabb but HW sends 0077 for busCurrent
@@ -148,7 +150,7 @@ const tcpserver = net.createServer((socket) => {
             broadcast(latestDataBuffer);
             console.log("Sent buffered data to mobile app:", latestDataBuffer);
         }
-    }, 100); // Adjust interval as needed (e.g., 50ms, 200ms)
+    }, 5000); // Adjust interval as needed (e.g., 50ms, 200ms)
 
 
     const sendHWInterval = setInterval(() => {
@@ -156,6 +158,8 @@ const tcpserver = net.createServer((socket) => {
             // Send packets to hardware
             socket.write(immobilizationPacket);
             socket.write(rpmPresetPacket);
+            // console.log('Sent Immobilization Packet:', immobilizationPacket.toString('hex'));
+            // console.log('Sent RPM Packet:', rpmPresetPacket.toString('hex'));
 
         } catch (error) {
             console.error('Error sending data:', error.message);
