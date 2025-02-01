@@ -134,8 +134,13 @@ const tcpserver = net.createServer((socket) => {
                 processedPayload = convertHexToDecimal(payload);
             } else if (dataType === "torque") {
                 processedPayload = payload.readUInt8(); // Convert 1-byte torque value to decimal
-            }
-            else if (dataType === "rpm") {
+            } else if (dataType === "deviceTemperature") {
+                processedPayload = payload.readUInt8BE(); // Convert 2-byte temperature value to decimal
+            } else if (dataType === "networkStrength") {
+                processedPayload = payload.readUInt8(); // Convert 1-byte network strength value to decimal
+            } else if (dataType === "motorTemperature") {
+                processedPayload = payload.readUInt8(); // Convert 1-byte motor temperature value to decimal
+            } else if (dataType === "rpm") {
                 processedPayload = payload.readUInt16BE(); // Convert 2-byte RPM value to decimal
             } else {
                 processedPayload = payload.toString('hex'); // Keep other data types as hex
