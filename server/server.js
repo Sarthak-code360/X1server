@@ -132,7 +132,10 @@ const tcpserver = net.createServer((socket) => {
 
             if (["busCurrent", "throttle", "SOC", "busVoltage"].includes(dataType)) {
                 processedPayload = convertHexToDecimal(payload);
-            } else if (dataType === "rpm") {
+            } else if (dataType === "torque") {
+                processedPayload = payload.readUInt8(); // Convert 1-byte torque value to decimal
+            }
+            else if (dataType === "rpm") {
                 processedPayload = payload.readUInt16BE(); // Convert 2-byte RPM value to decimal
             } else {
                 processedPayload = payload.toString('hex'); // Keep other data types as hex
