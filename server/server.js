@@ -39,6 +39,12 @@ function decodePacket(buffer) {
     const payload = buffer.slice(4, 4 + length);
 
     const checksum = buffer[length + 4];
+
+    // // Validate end-of-packet marker
+    if (buffer[5 + length] !== 0xcc) {
+        throw new Error('Invalid packet: Missing end-of-packet marker (0xCC).');
+    }
+
     return { dataType: DATA_TYPES[typeCode] || "unknown", payload };
 }
 
@@ -108,9 +114,8 @@ const tcpserver = net.createServer((socket) => {
     // Receiving Process
     socket.on('data', (data) => {
         try {
-            console.log('Received data:', data.toString('hex'));
+            console.log('Received packet:', data.toString('hex'));
             const { dataType, payload } = decodePacket(data);
-
 
             console.log(`Decoded Data Type: ${dataType}`);
             console.log(`Payload: ${payload.toString('hex')}`); // i recive aabb but HW sends 0077 for busCurrent
