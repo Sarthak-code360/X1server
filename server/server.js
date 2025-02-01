@@ -97,7 +97,6 @@ function convertHexToDecimal(payload) {
         return null;
     }
     if (payload[0] === 0xDD) {
-
         const firstByte = 0;  // Extract first byte as decimal
         const secondByte = payload.readUInt8(1); // Extract second byte as decimal
 
@@ -132,15 +131,13 @@ const tcpserver = net.createServer((socket) => {
 
             if (["busCurrent", "throttle", "SOC", "busVoltage"].includes(dataType)) {
                 processedPayload = convertHexToDecimal(payload);
-            } else if (dataType === "torque") {
-                processedPayload = payload.readUInt8(); // Convert 1-byte torque value to decimal
-            } else if (dataType === "deviceTemperature") {
-                processedPayload = payload.readUInt8BE(); // Convert 2-byte temperature value to decimal
-            } else if (dataType === "networkStrength") {
-                processedPayload = payload.readUInt8(); // Convert 1-byte network strength value to decimal
-            } else if (dataType === "motorTemperature") {
-                processedPayload = payload.readUInt8(); // Convert 1-byte motor temperature value to decimal
-            } else if (dataType === "rpm") {
+            } else if (payload.length === 1) {
+                if (payload === 0xDD) {
+                    processedPayload = 0;
+                } else {
+                    processedPayload = payload.readUInt8(); // Convert 1-byte torque value to decimal
+                }
+            } else if (payload.length === 2) {
                 processedPayload = payload.readUInt16BE(); // Convert 2-byte RPM value to decimal
             } else {
                 processedPayload = payload.toString('hex'); // Keep other data types as hex
