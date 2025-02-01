@@ -173,7 +173,7 @@ const tcpserver = net.createServer((socket) => {
             broadcast(latestDataBuffer);
             console.log("Sent buffered data to mobile app:", latestDataBuffer);
         }
-    }, 5000); // Adjust interval as needed (e.g., 50ms, 200ms)
+    }, 1000); // Adjust interval as needed (e.g., 50ms, 200ms)
 
 
     const sendHWInterval = setInterval(() => {
@@ -187,7 +187,7 @@ const tcpserver = net.createServer((socket) => {
         } catch (error) {
             console.error('Error sending data:', error.message);
         }
-    }, 60);
+    }, 5);
 
     socket.on('end', () => {
         console.log('Hardware disconnected!');
