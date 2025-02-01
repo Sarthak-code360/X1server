@@ -103,12 +103,15 @@ const tcpserver = net.createServer((socket) => {
     console.log('Hardware connected!', socket.remoteAddress);
     hardwareConnections.add(socket);
 
+    const latestDataBuffer = {}; // Stores the latest values of each data type
+
     // Receiving Process
     socket.on('data', (data) => {
         try {
             const { dataType, payload } = decodePacket(data);
+
             console.log(`Decoded Data Type: ${dataType}`);
-            console.log(`Payload: ${payload}`);
+            console.log(`Payload: ${payload.toString('hex')}`); // i recive aabb but HW sends 0077 for busCurrent
 
             let processedPayload;
 
@@ -131,16 +134,24 @@ const tcpserver = net.createServer((socket) => {
                 }
             } else {
                 // Broadcast other received data to app
-                const message = { dataType, payload: processedPayload };
-                broadcast(message);
+                // const message = { dataType, payload: processedPayload };
+                // broadcast(message);
+                latestDataBuffer[dataType] = processedPayload;
             }
         } catch (error) {
             console.error('Error decoding packet:', error.message);
         }
     });
 
+    const sendToAppInterval = setInterval(() => {
+        if (Object.keys(latestDataBuffer).length > 0) {
+            broadcast(latestDataBuffer);
+            console.log("Sent buffered data to mobile app:", latestDataBuffer);
+        }
+    }, 100); // Adjust interval as needed (e.g., 50ms, 200ms)
 
-    const sendInterval = setInterval(() => {
+
+    const sendHWInterval = setInterval(() => {
         try {
             // Send packets to hardware
             socket.write(immobilizationPacket);
@@ -149,17 +160,19 @@ const tcpserver = net.createServer((socket) => {
         } catch (error) {
             console.error('Error sending data:', error.message);
         }
-    }, 2);
+    }, 60);
 
     socket.on('end', () => {
         console.log('Hardware disconnected!');
-        clearInterval(sendInterval); // Clear interval when client disconnects
+        clearInterval(sendHWInterval); // Clear interval when client disconnects
+        clearInterval(sendToAppInterval);
         hardwareConnections.delete(socket);
     });
 
     socket.on('error', (error) => {
         console.error('Socket error:', error.message);
-        clearInterval(sendInterval);
+        clearInterval(sendHWInterval);
+        clearInterval(sendToAppInterval);
         hardwareConnections.delete(socket);
     });
 });
