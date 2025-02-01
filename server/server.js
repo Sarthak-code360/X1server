@@ -130,7 +130,7 @@ const tcpserver = net.createServer((socket) => {
 
             let processedPayload;
 
-            if (["busCurrent", "Throttle", "SOC", "busVoltage"].includes(dataType)) {
+            if (["busCurrent", "throttle", "SOC", "busVoltage"].includes(dataType)) {
                 processedPayload = convertHexToDecimal(payload);
             } else {
                 processedPayload = payload.toString('hex'); // Keep other data types as hex
