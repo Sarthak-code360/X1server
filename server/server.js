@@ -40,8 +40,8 @@ function decodePacket(buffer) {
 
     const checksum = buffer[length + 4];
 
-    // // Validate end-of-packet marker
-    if (buffer[5 + length] !== 0xcc) {
+    // Validate end-of-packet marker
+    if (typeCode !== 3 && buffer[5 + length] !== 0xcc) {
         throw new Error('Invalid packet: Missing end-of-packet marker (0xCC).');
     }
 
@@ -96,11 +96,19 @@ function convertHexToDecimal(payload) {
         console.error("Invalid payload length for conversion", payload);
         return null;
     }
+    if (payload[0] === 0xDD) {
 
-    const firstByte = payload.readUInt8(0);  // Extract first byte as decimal
-    const secondByte = payload.readUInt8(1); // Extract second byte as decimal
+        const firstByte = 0;  // Extract first byte as decimal
+        const secondByte = payload.readUInt8(1); // Extract second byte as decimal
 
-    return `${firstByte}.${secondByte}`; // Combine with decimal point
+        return `${firstByte}.${secondByte}`; // Combine with decimal point
+    }
+    else {
+        const firstByte = payload.readUInt8(0);  // Extract first byte as decimal
+        const secondByte = payload.readUInt8(1); // Extract second byte as decimal
+
+        return `${firstByte}.${secondByte}`; // Combine with decimal point
+    }
 }
 
 
