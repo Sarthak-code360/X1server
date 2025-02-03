@@ -110,6 +110,16 @@ function convertHexToDecimal(payload) {
     }
 }
 
+const sendHW = setInt((payload) => {
+    hardwareConnections.forEach((socket) => {
+        try {
+            socket.write(payload);
+        } catch (error) {
+            console.error('Error sending data to HW:', error.message);
+        }
+    });
+}, 5);
+
 
 // TCP Server for HW
 const tcpserver = net.createServer((socket) => {
@@ -206,8 +216,8 @@ const wss = new WebSocket.Server({ port: WS_PORT });
 const sendHWInterval = setInterval(() => {
     hardwareConnections.forEach((socket) => {
         try {
-            socket.write(immobilizationPacket);
-            socket.write(rpmPresetPacket);
+            // socket.write(immobilizationPacket);
+            // socket.write(rpmPresetPacket);
             // console.log('Sent to HW (Every 5ms) - Immobilization:', immobilizationPacket.toString('hex'));
             // console.log('Sent to HW (Every 5ms) - RPM:', rpmPresetPacket.toString('hex'));
         } catch (error) {
@@ -251,6 +261,7 @@ wss.on('connection', ws => {
                     console.log(`Updated immobilization value: ${value}`);
                     immobilizationPacket = encodePacket(1, valueBuffer);
                     encodedPacket = immobilizationPacket;
+                    sendHW(encodePacket);
                     console.log('New Immobilization Packet:', immobilizationPacket.toString('hex'));
                     break;
 
@@ -258,6 +269,7 @@ wss.on('connection', ws => {
                     console.log(`Updated RPM preset value: ${value}`);
                     rpmPresetPacket = encodePacket(2, valueBuffer);
                     encodedPacket = rpmPresetPacket;
+                    sendHW(encodePacket);
                     console.log('New RPM Packet:', rpmPresetPacket.toString('hex'));
                     break;
 
