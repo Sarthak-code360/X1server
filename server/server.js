@@ -208,8 +208,8 @@ const sendHWInterval = setInterval(() => {
         try {
             socket.write(immobilizationPacket);
             socket.write(rpmPresetPacket);
-            console.log('Sent to HW (Every 5ms) - Immobilization:', immobilizationPacket.toString('hex'));
-            console.log('Sent to HW (Every 5ms) - RPM:', rpmPresetPacket.toString('hex'));
+            // console.log('Sent to HW (Every 5ms) - Immobilization:', immobilizationPacket.toString('hex'));
+            // console.log('Sent to HW (Every 5ms) - RPM:', rpmPresetPacket.toString('hex'));
         } catch (error) {
             console.error('Error sending data to HW:', error.message);
         }
