@@ -181,21 +181,6 @@ const tcpserver = net.createServer((socket) => {
         }
     }, 1000);
 
-
-    // const sendHWInterval = setInterval(() => {
-    //     try {
-    //         hardwareConnections.forEach((socket) => {
-    //             // Send packets to hardware
-    //             socket.write(immobilizationPacket);
-    //             socket.write(rpmPresetPacket);
-    //             console.log('Sent Immobilization Packet:', immobilizationPacket.toString('hex'));
-    //             console.log('Sent RPM Packet to HW:', rpmPresetPacket.toString('hex'));
-    //         });
-    //     } catch (error) {
-    //         console.error('Error sending data:', error.message);
-    //     }
-    // }, 5);
-
     socket.on('end', () => {
         console.log('Hardware disconnected!');
         clearInterval(sendHWInterval); // Clear interval when client disconnects
@@ -217,6 +202,19 @@ tcpserver.listen(TCP_PORT, () => {
 
 // WebSocket Server for Mobile App
 const wss = new WebSocket.Server({ port: WS_PORT });
+
+const sendHWInterval = setInterval(() => {
+    hardwareConnections.forEach((socket) => {
+        try {
+            socket.write(immobilizationPacket);
+            socket.write(rpmPresetPacket);
+            console.log('Sent to HW (Every 5ms) - Immobilization:', immobilizationPacket.toString('hex'));
+            console.log('Sent to HW (Every 5ms) - RPM:', rpmPresetPacket.toString('hex'));
+        } catch (error) {
+            console.error('Error sending data to HW:', error.message);
+        }
+    });
+}, 5);
 
 wss.on('connection', ws => {
     console.log('Mobile App connected!');
@@ -254,16 +252,6 @@ wss.on('connection', ws => {
                     immobilizationPacket = encodePacket(1, valueBuffer);
                     encodedPacket = immobilizationPacket;
                     console.log('New Immobilization Packet:', immobilizationPacket.toString('hex'));
-
-                    // Immediately send the updated packet to all connected TCP devices
-                    hardwareConnections.forEach((socket) => {
-                        try {
-                            socket.write(immobilizationPacket);
-                            console.log(`Sent updated immobilization packet to hardware: ${immobilizationPacket.toString('hex')}`);
-                        } catch (error) {
-                            console.error("Error sending updated data to hardware:", error.message);
-                        }
-                    })
                     break;
 
                 case "rpmPreset":
@@ -271,16 +259,6 @@ wss.on('connection', ws => {
                     rpmPresetPacket = encodePacket(2, valueBuffer);
                     encodedPacket = rpmPresetPacket;
                     console.log('New RPM Packet:', rpmPresetPacket.toString('hex'));
-
-                    // Immediately send the updated packet to all connected TCP devices
-                    hardwareConnections.forEach((socket) => {
-                        try {
-                            socket.write(rpmPresetPacket);
-                            console.log(`Sent updated RPM preset packet to hardware: ${rpmPresetPacket.toString('hex')}`);
-                        } catch (error) {
-                            console.error("Error sending updated data to hardware:", error.message);
-                        }
-                    });
                     break;
 
                 default:
