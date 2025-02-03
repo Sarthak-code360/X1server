@@ -125,7 +125,7 @@ const tcpserver = net.createServer((socket) => {
             const { dataType, payload } = decodePacket(data);
 
             console.log(`Decoded Data Type: ${dataType}`);
-            console.log(`Payload: ${payload.toString('hex')}`); // i recive aabb but HW sends 0077 for busCurrent
+            console.log(`Payload: ${payload.toString('hex')}`);
 
             let processedPayload;
 
@@ -142,6 +142,15 @@ const tcpserver = net.createServer((socket) => {
             } else {
                 processedPayload = payload.toString('hex'); // Keep other data types as hex
             }
+
+            // Can try this?? for 0xDD case
+            // if (payload.length === 2) {
+            //     processedPayload = convertHexToDecimal(payload);  // Always apply conversion
+            // } else if (payload.length === 1) {
+            //     processedPayload = payload.readUInt8();
+            // } else {
+            //     processedPayload = payload.toString('hex');
+            // }
 
             console.log(`Processed Payload: ${processedPayload}`);
 
@@ -170,21 +179,22 @@ const tcpserver = net.createServer((socket) => {
             broadcast(latestDataBuffer);
             console.log("Sent buffered data to mobile app:", latestDataBuffer);
         }
-    }, 1000); // Adjust interval as needed (e.g., 50ms, 200ms)
+    }, 1000);
 
 
-    const sendHWInterval = setInterval(() => {
-        try {
-            // Send packets to hardware
-            socket.write(immobilizationPacket);
-            socket.write(rpmPresetPacket);
-            // console.log('Sent Immobilization Packet:', immobilizationPacket.toString('hex'));
-            // console.log('Sent RPM Packet:', rpmPresetPacket.toString('hex'));
-
-        } catch (error) {
-            console.error('Error sending data:', error.message);
-        }
-    }, 5);
+    // const sendHWInterval = setInterval(() => {
+    //     try {
+    //         hardwareConnections.forEach((socket) => {
+    //             // Send packets to hardware
+    //             socket.write(immobilizationPacket);
+    //             socket.write(rpmPresetPacket);
+    //             console.log('Sent Immobilization Packet:', immobilizationPacket.toString('hex'));
+    //             console.log('Sent RPM Packet to HW:', rpmPresetPacket.toString('hex'));
+    //         });
+    //     } catch (error) {
+    //         console.error('Error sending data:', error.message);
+    //     }
+    // }, 5);
 
     socket.on('end', () => {
         console.log('Hardware disconnected!');
@@ -244,6 +254,16 @@ wss.on('connection', ws => {
                     immobilizationPacket = encodePacket(1, valueBuffer);
                     encodedPacket = immobilizationPacket;
                     console.log('New Immobilization Packet:', immobilizationPacket.toString('hex'));
+
+                    // Immediately send the updated packet to all connected TCP devices
+                    hardwareConnections.forEach((socket) => {
+                        try {
+                            socket.write(immobilizationPacket);
+                            console.log(`Sent updated immobilization packet to hardware: ${immobilizationPacket.toString('hex')}`);
+                        } catch (error) {
+                            console.error("Error sending updated data to hardware:", error.message);
+                        }
+                    })
                     break;
 
                 case "rpmPreset":
@@ -251,6 +271,16 @@ wss.on('connection', ws => {
                     rpmPresetPacket = encodePacket(2, valueBuffer);
                     encodedPacket = rpmPresetPacket;
                     console.log('New RPM Packet:', rpmPresetPacket.toString('hex'));
+
+                    // Immediately send the updated packet to all connected TCP devices
+                    hardwareConnections.forEach((socket) => {
+                        try {
+                            socket.write(rpmPresetPacket);
+                            console.log(`Sent updated RPM preset packet to hardware: ${rpmPresetPacket.toString('hex')}`);
+                        } catch (error) {
+                            console.error("Error sending updated data to hardware:", error.message);
+                        }
+                    });
                     break;
 
                 default:
