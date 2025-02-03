@@ -217,7 +217,7 @@ const sendHWInterval = setInterval(() => {
 }, 5);
 
 wss.on('connection', ws => {
-    console.log('Mobile App connected!');
+    console.log('Mobile App connected!', ws._socket.remoteAddress);
     WebSocketClients.add(ws);
 
     // Send acknowledgment message
