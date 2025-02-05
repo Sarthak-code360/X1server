@@ -110,16 +110,6 @@ function convertHexToDecimal(payload) {
     }
 }
 
-// function sendHW(packet) {
-//     hardwareConnections.forEach((socket) => {
-//         try {
-//             socket.write(packet);
-//         } catch (error) {
-//             console.error('Error sending data to HW:', error.message);
-//         }
-//     });
-// }
-
 
 // TCP Server for HW
 const tcpserver = net.createServer((socket) => {
@@ -145,22 +135,13 @@ const tcpserver = net.createServer((socket) => {
                 if (payload === 0xDD) {
                     processedPayload = 0;
                 } else {
-                    processedPayload = payload.readUInt8(); // Convert 1-byte torque value to decimal
+                    processedPayload = payload.readUInt8();
                 }
             } else if (payload.length === 2) {
-                processedPayload = payload.readUInt16BE(); // Convert 2-byte RPM value to decimal
+                processedPayload = payload.readUInt16BE();
             } else {
-                processedPayload = payload.toString('hex'); // Keep other data types as hex
+                processedPayload = payload.toString('hex');
             }
-
-            // Can try this?? for 0xDD case
-            // if (payload.length === 2) {
-            //     processedPayload = convertHexToDecimal(payload);  // Always apply conversion
-            // } else if (payload.length === 1) {
-            //     processedPayload = payload.readUInt8();
-            // } else {
-            //     processedPayload = payload.toString('hex');
-            // }
 
             console.log(`Processed Payload: ${processedPayload}`);
 
@@ -168,15 +149,11 @@ const tcpserver = net.createServer((socket) => {
                 const gpsData = processGPSData(payload.toString());
                 if (gpsData) {
                     console.log("GPS Data:", gpsData);
-                    // Broadcast gps data to app
                     broadcast({ dataType, ...gpsData });
                 } else {
                     console.error("Invalid GPS data received.");
                 }
             } else {
-                // Broadcast other received data to app
-                // const message = { dataType, payload: processedPayload };
-                // broadcast(message);
                 latestDataBuffer[dataType] = processedPayload;
             }
         } catch (error) {
@@ -193,7 +170,7 @@ const tcpserver = net.createServer((socket) => {
 
     socket.on('end', () => {
         console.log('Hardware disconnected!');
-        clearInterval(sendHWInterval); // Clear interval when client disconnects
+        clearInterval(sendHWInterval);
         clearInterval(sendToAppInterval);
         hardwareConnections.delete(socket);
     });
@@ -261,7 +238,6 @@ wss.on('connection', ws => {
                     console.log(`Updated immobilization value: ${value}`);
                     immobilizationPacket = encodePacket(1, valueBuffer);
                     encodedPacket = immobilizationPacket;
-                    // sendHW(encodePacket);
                     console.log('New Immobilization Packet:', immobilizationPacket.toString('hex'));
                     break;
 
@@ -269,7 +245,6 @@ wss.on('connection', ws => {
                     console.log(`Updated RPM preset value: ${value}`);
                     rpmPresetPacket = encodePacket(2, valueBuffer);
                     encodedPacket = rpmPresetPacket;
-                    // sendHW(encodePacket);
                     console.log('New RPM Packet:', rpmPresetPacket.toString('hex'));
                     break;
 
@@ -317,7 +292,7 @@ function broadcast(message) {
         if (client.readyState == WebSocket.OPEN) {
             client.send(jsonMessage);
         } else {
-            WebSocketClients.delete(client); // Remove inactive clients
+            WebSocketClients.delete(client);
         }
     });
 }
