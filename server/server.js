@@ -84,7 +84,6 @@ function processGPSData(gpsString) {
         console.error(`Invalid GPS data: ${gpsString}`);
         return null;
     }
-
     // Remove non-numeric and non-decimal characters from gpsLong
     const gpsLong = gpsLongRaw.match(/-?\d+\.\d+/)?.[0] || '';
 
