@@ -96,10 +96,10 @@ function convertHexToDecimal(payload) {
         return null;
     }
     if (payload[0] === 0xDD) {
-        const firstByte = 0;  // Extract first byte as decimal
-        const secondByte = payload.readUInt8(1); // Extract second byte as decimal
+        const firstByte = 0;
+        const secondByte = payload.readUInt8(1);
 
-        return `${firstByte}.${secondByte}`; // Combine with decimal point
+        return `${firstByte}.${secondByte}`;
     }
     else {
         const firstByte = payload.readUInt8(0);  // Extract first byte as decimal
@@ -134,10 +134,10 @@ const tcpserver = net.createServer((socket) => {
                 if (payload === 0xDD) {
                     processedPayload = 0;
                 } else {
-                    processedPayload = payload.readUInt8();
+                    processedPayload = payload.readUInt8(); // Convert 1byte to decimal
                 }
             } else if (payload.length === 2) {
-                processedPayload = payload.readUInt16BE();
+                processedPayload = payload.readUInt16BE(); // Convert 2bytes to decimal
             } else {
                 processedPayload = payload.toString('hex');
             }
@@ -163,7 +163,7 @@ const tcpserver = net.createServer((socket) => {
     const sendToAppInterval = setInterval(() => {
         if (Object.keys(latestDataBuffer).length > 0) {
             broadcast(latestDataBuffer);
-            console.log("Sent buffered data to mobile app:", latestDataBuffer);
+            // console.log("Sent buffered data to mobile app:", latestDataBuffer);
         }
     }, 1000);
 
@@ -194,8 +194,6 @@ const sendHWInterval = setInterval(() => {
         try {
             socket.write(immobilizationPacket);
             socket.write(rpmPresetPacket);
-            // console.log('Sent to HW (Every 5ms) - Immobilization:', immobilizationPacket.toString('hex'));
-            // console.log('Sent to HW (Every 5ms) - RPM:', rpmPresetPacket.toString('hex'));
         } catch (error) {
             console.error('Error sending data to HW:', error.message);
         }
