@@ -120,7 +120,24 @@ const tcpserver = net.createServer((socket) => {
     // Receiving Process
     socket.on('data', (data) => {
         try {
-            console.log('Received packet:', data.toString('hex'));
+            // console.log('Received packet:', data.toString('hex')); // HW data packet
+
+            //CLI JSON
+            const jsonString = data.toString();
+            console.log('Received Raw JSON:', jsonString);
+
+            const jsonData = JSON.parse(jsonString);
+            console.log('📥 Received:', JSON.stringify(jsonData, null, 2)); // Pretty-print JSON
+
+            const { time, voltage, current, imu } = jsonData;
+
+            // Store the latest received data
+            latestDataBuffer["time"] = time;
+            latestDataBuffer["voltage"] = voltage;
+            latestDataBuffer["current"] = current;
+            latestDataBuffer["imu"] = imu;
+
+
             const { dataType, payload } = decodePacket(data);
 
             console.log(`Decoded Data Type: ${dataType}`);
