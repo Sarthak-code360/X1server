@@ -17,6 +17,7 @@ const DATA_TYPES = {
     10: "SOC",
     11: "throttle",
     12: "motorTemperature",
+    13: "motorType",
 };
 
 // Store active connections
@@ -25,6 +26,7 @@ const WebSocketClients = new Set();
 
 let immobilizationPacket = encodePacket(1, Buffer.from([0])); // Default 'unlock'
 let rpmPresetPacket = encodePacket(2, Buffer.from([0])); // Default to 0
+let motorTypePacket = encodePacket(13, Buffer.from([0])); // Default to 0
 
 function decodePacket(buffer) {
     if (buffer.length < 5) {
@@ -199,6 +201,7 @@ const sendHWInterval = setInterval(() => {
         try {
             socket.write(immobilizationPacket);
             socket.write(rpmPresetPacket);
+            socket.write(motorTypePacket);
         } catch (error) {
             console.error('Error sending data to HW:', error.message);
         }
@@ -248,6 +251,12 @@ wss.on('connection', ws => {
                     rpmPresetPacket = encodePacket(2, valueBuffer);
                     encodedPacket = rpmPresetPacket;
                     console.log('New RPM Packet:', rpmPresetPacket.toString('hex'));
+                    break;
+
+                case "motorType":
+                    console.log(`Updated Motor Type value: ${value}`);
+                    encodedPacket = encodePacket(13, valueBuffer);
+                    console.log('New Motor Type Packet:', encodedPacket.toString('hex'));
                     break;
 
                 default:
