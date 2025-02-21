@@ -213,12 +213,17 @@ const sendHWInterval = setInterval(() => {
     });
 }, 5);
 
+let lastMotorType = null;
 wss.on('connection', ws => {
     console.log('Mobile App connected!', ws._socket.remoteAddress);
     WebSocketClients.add(ws);
 
     // Send acknowledgment message
     ws.send(JSON.stringify({ message: 'Connection established with WebSocket server on port 4050.' }));
+
+    if (lastMotorType !== null) {
+        ws.send(JSON.stringify({ dataType: "motorType", value: lastMotorType }));
+    }
 
     ws.on("message", (message) => {
         console.log("Received message from Mobile App:", message);
@@ -238,8 +243,9 @@ wss.on('connection', ws => {
 
         if (dataType === "motorType") {
             console.log(`Received Motor Type: ${value}`);
-            // Broadcast motorType immediately to all WebSocket clients
-            broadcast({ dataType, value });
+            lastMotorType = value; // Update stored value
+            // Broadcast motorType immediately
+            broadcast({ dataType: "motorType", value: lastMotorType });
         }
 
         // Convert value to HEX buffer with proper size
@@ -306,6 +312,12 @@ wss.on('connection', ws => {
         WebSocketClients.delete(ws);
     });
 });
+
+setInterval(() => {
+    if (lastMotorType !== null) {
+        broadcast({ dataType: "motorType", value: lastMotorType });
+    }
+}, 2000);
 
 // Broadcast to Mobile
 function broadcast(message) {
