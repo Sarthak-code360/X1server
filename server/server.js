@@ -9,13 +9,13 @@ const DATA_TYPES = {
     2: "rpmPreset",
     3: "gps",
     4: "busCurrent",
-    5: "busVoltage",
-    6: "rpm",
-    7: "deviceTemperature",
-    8: "networkStrength",
-    9: "torque",
-    10: "SOC",
-    11: "throttle",
+    5: "rpm",
+    6: "SOC",
+    7: "throttle",
+    8: "torque",
+    9: "busVoltage",
+    10: "deviceTemperature",
+    11: "networkStrength",
     12: "motorTemperature",
     13: "motorType",
 };
@@ -166,6 +166,7 @@ const tcpserver = net.createServer((socket) => {
             } else {
                 latestDataBuffer[dataType] = processedPayload;
             }
+
         } catch (error) {
             console.error('Error decoding packet:', error.message);
         }
@@ -227,6 +228,12 @@ wss.on('connection', ws => {
         } catch (error) {
             console.error("Error parsing message:", error);
             return;
+        }
+
+        if (dataType === "motorType") {
+            console.log(`Received Motor Type: ${value}`);
+            // Broadcast motorType immediately to all WebSocket clients
+            broadcast({ dataType, value });
         }
 
         const { dataType, value } = parsedMessage;
