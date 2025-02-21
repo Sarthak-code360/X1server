@@ -255,7 +255,8 @@ wss.on('connection', ws => {
 
                 case "motorType":
                     console.log(`Updated Motor Type value: ${value}`);
-                    encodedPacket = encodePacket(13, valueBuffer);
+                    motorTypePacket = encodePacket(13, valueBuffer);
+                    encodedPacket = motorTypePacket;
                     console.log('New Motor Type Packet:', encodedPacket.toString('hex'));
                     break;
 
