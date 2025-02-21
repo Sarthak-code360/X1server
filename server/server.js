@@ -236,6 +236,12 @@ wss.on('connection', ws => {
             return;
         }
 
+        if (dataType === "motorType") {
+            console.log(`Received Motor Type: ${value}`);
+            // Broadcast motorType immediately to all WebSocket clients
+            broadcast({ dataType, value });
+        }
+
         // Convert value to HEX buffer with proper size
         const valueBuffer = value > 255
             ? Buffer.from([(value >> 8) & 0xff, value & 0xff]) // Multi-byte value (Big Endian)
