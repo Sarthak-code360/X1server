@@ -145,7 +145,7 @@ const tcpserver = net.createServer((socket) => {
                 }
             } else if (payload.length === 2) {
                 if (payload[0] === 0xDD) {
-                    processedPayload = payload[1].readUInt8();
+                    processedPayload = payload.readUInt8(1);
                 } else {
                     processedPayload = payload.readUInt16BE();
                 }
