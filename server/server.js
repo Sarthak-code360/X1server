@@ -144,7 +144,11 @@ const tcpserver = net.createServer((socket) => {
                     processedPayload = payload.readUInt8(); // Convert 1byte to decimal
                 }
             } else if (payload.length === 2) {
-                processedPayload = payload.readUInt16BE(); // Convert 2bytes to decimal
+                if (payload[0] === 0xDD) {
+                    processedPayload = payload[1].readUInt8();
+                } else {
+                    processedPayload = payload.readUInt16BE();
+                }
             } else {
                 processedPayload = payload.toString('hex');
             }
