@@ -230,12 +230,6 @@ wss.on('connection', ws => {
             return;
         }
 
-        if (dataType === "motorType") {
-            console.log(`Received Motor Type: ${value}`);
-            // Broadcast motorType immediately to all WebSocket clients
-            broadcast({ dataType, value });
-        }
-
         const { dataType, value } = parsedMessage;
         if (!dataType || value === undefined) {
             console.error("Invalid message format.");
