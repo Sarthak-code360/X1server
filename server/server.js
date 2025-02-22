@@ -137,17 +137,19 @@ const tcpserver = net.createServer((socket) => {
 
             if (["busCurrent", "throttle", "SOC", "busVoltage"].includes(dataType)) {
                 processedPayload = convertHexToDecimal(payload);
-            } else if (payload.length === 1) {
-                if (payload === 0xDD) {
-                    processedPayload = 0;
+            } else if (dataType === "rpm" || dataType === "torque") { // Handle Torque like RPM
+                if (payload.length === 1 && payload[0] === 0xDD) {
+                    processedPayload = 0; // Assign 0 if value is 0xDD
+                } else if (payload.length === 1) {
+                    processedPayload = payload.readUInt8(); // Single-byte decimal value
+                } else if (payload.length === 2) {
+                    if (payload[0] === 0xDD) {
+                        processedPayload = payload.readUInt8(1); // If first byte is 0xDD, take second byte
+                    } else {
+                        processedPayload = payload.readUInt16BE(); // 2-byte decimal value
+                    }
                 } else {
-                    processedPayload = payload.readUInt8(); // Convert 1byte to decimal
-                }
-            } else if (payload.length === 2) {
-                if (payload[0] === 0xDD) {
-                    processedPayload = payload.readUInt8(1);
-                } else {
-                    processedPayload = payload.readUInt16BE();
+                    processedPayload = payload.toString('hex');
                 }
             } else {
                 processedPayload = payload.toString('hex');
