@@ -28,12 +28,12 @@ protobuf.load("ServerProperties.proto", function (err, root) {
                 buffer = buffer.slice(endIndex + 1); // Remove processed packet
 
                 try {
-                    const decoded = PropertyReceive.decode(packet);
+                    const decoded = PropertySend.decode(packet);
                     console.log("Received data from HW:", decoded);
 
                     // Send a response back to the hardware
                     const responseMessage = PropertyReceive.create({
-                        Immobilize: false,
+                        Immobolize: false,
                         RPM_preset: 3500,
                         MotorType: true,
                     });
