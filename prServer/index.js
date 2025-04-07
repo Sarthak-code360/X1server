@@ -16,6 +16,7 @@ protobuf.load("ServerProperties.proto", function (err, root) {
         console.log('Hardware connected!');
 
         let buffer = Buffer.alloc(0);
+
         socket.on("data", chunk => {
             buffer = Buffer.concat([buffer, chunk]);
 
@@ -50,6 +51,7 @@ protobuf.load("ServerProperties.proto", function (err, root) {
                     socket.write(framedResponse);
                     console.log("Sent data to HW:", responseMessage);
                 } catch (error) {
+                    console.error("Decoding failed! Raw hex: ", packet.toString("hex"));
                     console.error("Error decoding packet:", error.message);
                 }
             }
