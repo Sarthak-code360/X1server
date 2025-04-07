@@ -1,0 +1,31 @@
+
+syntax = "proto3";
+
+message PropertySend {
+   float Bus_Current = 2;
+   uint32 RPM = 4;
+   int32 Torque = 5;
+   string GPS = 6;
+   uint32 GPS_size = 15;
+   float SOC = 3;
+   uint32 Net_Strength = 8;
+   uint32 Device_Temp = 9;
+   uint32 Motor_Temp = 10;
+   float Bus_Voltage = 11;
+   float Throttle = 12;
+}
+
+message PropertySometime {
+        uint32 sample = 100;
+}
+
+message PropertyReceive {
+        bool Immobolize = 13;
+        uint32 RPM_preset = 14;
+        bool MotorType = 7;
+}
+
+message PropertySender {
+        bool SendFlag = 16;
+        bool AckFlag = 17;
+}
