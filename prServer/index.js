@@ -24,7 +24,7 @@ protobuf.load("ServerProperties.proto", function (err, root) {
 
                 try {
                     const decoded = PropertySend.decode(packet);
-                    console.log("📥 Received from HW:", decoded);
+                    console.log("Received from HW:", decoded);
 
                     // Prepare a response
                     const responseMessage = PropertyReceive.create({
@@ -42,9 +42,9 @@ protobuf.load("ServerProperties.proto", function (err, root) {
                     ]);
 
                     socket.write(framedResponse);
-                    console.log("📤 Sent response to HW:", responseMessage);
+                    console.log("Sent response to HW:", responseMessage);
                 } catch (e) {
-                    console.error("❌ Decode failed:", e.message);
+                    console.error("Decode failed:", e.message);
                     console.log("Raw data:", packet.toString("hex"));
                 }
             } else {
@@ -52,11 +52,11 @@ protobuf.load("ServerProperties.proto", function (err, root) {
             }
         });
 
-        socket.on("close", () => console.log("❌ Hardware disconnected"));
-        socket.on("error", err => console.error("⚠️ Socket error:", err.message));
+        socket.on("close", () => console.log("Hardware disconnected"));
+        socket.on("error", err => console.error("Socket error:", err.message));
     });
 
     tcpserver.listen(TCP_PORT, () => {
-        console.log(`🚀 Server listening on port ${TCP_PORT}`);
+        console.log(`Server listening on port ${TCP_PORT}`);
     });
 });
