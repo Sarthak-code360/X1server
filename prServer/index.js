@@ -1,62 +1,71 @@
-const protobuf = require('protobufjs');
 const net = require('net');
+const protobuf = require('protobufjs');
 
 const TCP_PORT = 3050;
 
-protobuf.load("ServerProperties.proto", function (err, root) {
+// Load proto file
+protobuf.load("ServerProperties.proto", (err, root) => {
     if (err) throw err;
 
     const PropertySend = root.lookupType("PropertySend");
     const PropertyReceive = root.lookupType("PropertyReceive");
 
-    const tcpserver = net.createServer(socket => {
-        console.log('Hardware connected!');
+    const server = net.createServer(socket => {
+        console.log("✅ Hardware connected!");
+
+        let buffer = Buffer.alloc(0);
 
         socket.on("data", chunk => {
-            const startMarker = Buffer.from("aabb", "hex");
-            const endMarker = Buffer.from("cc", "hex");
+            buffer = Buffer.concat([buffer, chunk]);
 
-            const startIndex = chunk.indexOf(startMarker);
-            const endIndex = chunk.indexOf(endMarker, startIndex + startMarker.length);
+            while (true) {
+                const startIndex = buffer.indexOf(Buffer.from("aabb", "hex"));
+                const endIndex = buffer.indexOf(Buffer.from("cc", "hex"), startIndex);
 
-            if (startIndex !== -1 && endIndex !== -1 && endIndex > startIndex) {
-                const packet = chunk.slice(startIndex + startMarker.length, endIndex);
+                if (startIndex === -1 || endIndex === -1 || endIndex <= startIndex) break;
+
+                const packet = buffer.slice(startIndex + 2, endIndex);
+                buffer = buffer.slice(endIndex + 1); // move buffer forward
 
                 try {
                     const decoded = PropertySend.decode(packet);
-                    console.log("Received from HW:", decoded);
+                    console.log("📥 Received from HW:", decoded);
 
-                    // Prepare a response
-                    const responseMessage = PropertyReceive.create({
+                    // Create and send PropertyReceive response
+                    const response = PropertyReceive.create({
                         Immobolize: false,
-                        RPM_preset: 3000,
                         MotorType: true,
+                        RPM_preset: 300
                     });
 
-                    const encoded = PropertyReceive.encode(responseMessage).finish();
+                    const encoded = PropertyReceive.encode(response).finish();
+                    console.log("📤 Encoded response (hex):", encoded.toString("hex"));
 
-                    const framedResponse = Buffer.concat([
-                        startMarker,
-                        encoded,
-                        endMarker
+                    const framed = Buffer.concat([
+                        Buffer.from("aabb", "hex"),
+                        encoded,  // ✅ FIXED
+                        Buffer.from("cc", "hex")
                     ]);
 
-                    socket.write(framedResponse);
-                    console.log("Sent response to HW:", responseMessage);
+                    socket.write(framed);
+                    console.log("📤 Sent to HW:", response);
+
                 } catch (e) {
-                    console.error("Decode failed:", e.message);
-                    console.log("Raw data:", packet.toString("hex"));
+                    console.error("❌ Decode error:", e.message);
                 }
-            } else {
-                console.warn("Framing error: SOP or EOP not found");
             }
         });
 
-        socket.on("close", () => console.log("Hardware disconnected"));
-        socket.on("error", err => console.error("Socket error:", err.message));
+        socket.on("close", () => {
+            console.log("🔌 Hardware disconnected");
+        });
+
+        socket.on("error", err => {
+            console.error("⚠️ Socket error:", err.message);
+        });
     });
 
-    tcpserver.listen(TCP_PORT, () => {
-        console.log(`Server listening on port ${TCP_PORT}`);
+    server.listen(TCP_PORT, () => {
+        console.log(`🚀 Server listening on port ${TCP_PORT}`);
     });
 });
