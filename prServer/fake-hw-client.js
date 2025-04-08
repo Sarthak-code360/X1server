@@ -13,7 +13,7 @@ protobuf.load("ServerProperties.proto", (err, root) => {
     const socket = new net.Socket();
 
     socket.connect(PORT, HOST, () => {
-        console.log("🔌 Connected to server");
+        console.log("Connected to server");
 
         const message = PropertySend.create({
             Bus_Current: 12.5,
@@ -38,7 +38,7 @@ protobuf.load("ServerProperties.proto", (err, root) => {
         ]);
 
         socket.write(framed);
-        console.log("📤 Sent data to server:", message);
+        console.log("Sent data to server:", message);
     });
 
     socket.on("data", data => {
@@ -50,9 +50,9 @@ protobuf.load("ServerProperties.proto", (err, root) => {
 
             try {
                 const decoded = PropertyReceive.decode(packet);
-                console.log("📥 Received from server:", decoded);
+                console.log("Received from server:", decoded);
             } catch (err) {
-                console.error("❌ Failed to decode server response:", err.message);
+                console.error("Failed to decode server response:", err.message);
             }
         }
     });

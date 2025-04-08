@@ -10,7 +10,7 @@ protobuf.load("ServerProperties.proto", function (err, root) {
     const PropertyReceive = root.lookupType("PropertyReceive");
 
     const tcpserver = net.createServer(socket => {
-        console.log('🔌 Hardware connected!');
+        console.log('Hardware connected!');
 
         socket.on("data", chunk => {
             const startMarker = Buffer.from("aabb", "hex");
