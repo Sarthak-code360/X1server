@@ -48,7 +48,7 @@ protobuf.load("ServerProperties.proto", function (err, root) {
                     console.log("Raw data:", packet.toString("hex"));
                 }
             } else {
-                console.warn("❗ Framing error: SOP or EOP not found");
+                console.warn("Framing error: SOP or EOP not found");
             }
         });
 
