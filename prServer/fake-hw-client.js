@@ -4,7 +4,7 @@ const protobuf = require("protobufjs");
 const PORT = 3050;
 const HOST = "localhost";
 
-protobuf.load("ServerProperties.proto", function (err, root) {
+protobuf.load("ServerProperties.proto", (err, root) => {
     if (err) throw err;
 
     const PropertySend = root.lookupType("PropertySend");
@@ -13,9 +13,8 @@ protobuf.load("ServerProperties.proto", function (err, root) {
     const socket = new net.Socket();
 
     socket.connect(PORT, HOST, () => {
-        console.log("📡 Connected to server");
+        console.log("🔌 Connected to server");
 
-        // Create dummy PropertySend message
         const message = PropertySend.create({
             Bus_Current: 12.5,
             RPM: 4200,
@@ -32,7 +31,6 @@ protobuf.load("ServerProperties.proto", function (err, root) {
 
         const encoded = PropertySend.encode(message).finish();
 
-        // Frame with aabb ... cc
         const framed = Buffer.concat([
             Buffer.from("aabb", "hex"),
             encoded,
@@ -40,7 +38,7 @@ protobuf.load("ServerProperties.proto", function (err, root) {
         ]);
 
         socket.write(framed);
-        console.log("📤 Sent dummy data to server:", message);
+        console.log("📤 Sent data to server:", message);
     });
 
     socket.on("data", data => {
@@ -52,7 +50,7 @@ protobuf.load("ServerProperties.proto", function (err, root) {
 
             try {
                 const decoded = PropertyReceive.decode(packet);
-                console.log("📥 Received response from server:", decoded);
+                console.log("📥 Received from server:", decoded);
             } catch (err) {
                 console.error("❌ Failed to decode server response:", err.message);
             }
