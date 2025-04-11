@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+package mypackage;
+
 message PropertySend {
    float Bus_Current = 2;
    uint32 RPM = 4;
@@ -15,16 +17,17 @@ message PropertySend {
 }
 
 message PropertySometime {
-        uint32 sample = 100;
+    uint32 sample = 100;
 }
 
+// Renumbered for clarity in this message.
 message PropertyReceive {
-        bool Immobolize = 13;
-        uint32 RPM_preset = 14;
-        bool MotorType = 7;
+    uint32 RPM_preset = 1;
+    bool Immobolize = 2;
+    bool MotorType = 3;
 }
 
 message PropertySender {
-        bool SendFlag = 16;
-        bool AckFlag = 17;
+    bool SendFlag = 16;
+    bool AckFlag = 17;
 }

@@ -33,12 +33,20 @@ protobuf.load("ServerProperties.proto", (err, root) => {
 
                     // Create and send PropertyReceive response
                     const response = PropertyReceive.create({
-                        Immobolize: false,
                         MotorType: true,
-                        RPM_preset: 300
+                        Immobolize: false,
+                        RPM_preset: 3,
                     });
+                    console.log("RPM_preset:", response.RPM_preset);
+                    // encode RPM_preset to hex
+                    const hexRPM = response.RPM_preset.toString(16).padStart(4, '0');
+                    console.log("Hex RPM_preset:", hexRPM);
+
+
+                    console.log("Response to HW:", JSON.stringify(response)); // Show JSON output
 
                     const encoded = PropertyReceive.encode(response).finish();
+
                     console.log("Encoded response (hex):", encoded.toString("hex"));
 
                     const framed = Buffer.concat([
@@ -48,7 +56,6 @@ protobuf.load("ServerProperties.proto", (err, root) => {
                     ]);
 
                     socket.write(framed);
-                    console.log("Sent to HW:", response);
 
                 } catch (e) {
                     console.error("❌ Decode error:", e.message);
