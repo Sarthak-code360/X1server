@@ -18,6 +18,7 @@ const DATA_TYPES = {
     11: "networkStrength",
     12: "motorTemperature",
     13: "motorType",
+    14: "devMode",
 };
 
 // Store active connections
@@ -27,6 +28,7 @@ const WebSocketClients = new Set();
 let immobilizationPacket = encodePacket(1, Buffer.from([0])); // Default 'unlock'
 let rpmPresetPacket = encodePacket(2, Buffer.from([0])); // Default to 0
 let motorTypePacket = encodePacket(13, Buffer.from([0])); // Default to 0
+let devModePacket = encodePacket(14, Buffer.from([0])); // Default to 0
 
 function decodePacket(buffer) {
     if (buffer.length < 5) {
@@ -209,6 +211,7 @@ const sendHWInterval = setInterval(() => {
             socket.write(immobilizationPacket);
             socket.write(rpmPresetPacket);
             socket.write(motorTypePacket);
+            socket.write(devModePacket);
         } catch (error) {
             console.error('Error sending data to HW:', error.message);
         }
@@ -277,6 +280,13 @@ wss.on('connection', ws => {
                     motorTypePacket = encodePacket(13, valueBuffer);
                     encodedPacket = motorTypePacket;
                     console.log('New Motor Type Packet:', encodedPacket.toString('hex'));
+                    break;
+
+                case "devMode":
+                    console.log(`Updated Dev Mode value: ${value}`);
+                    devModePacket = encodePacket(14, valueBuffer);
+                    encodedPacket = devModePacket;
+                    console.log('New Dev Mode Packet:', encodedPacket.toString('hex'));
                     break;
 
                 default:
