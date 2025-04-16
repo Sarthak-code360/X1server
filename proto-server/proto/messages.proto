@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+message AppToHW {
+  optional uint32 RPM_preset = 1;
+  optional bool Immobolize = 2;
+  optional bool MotorType = 3;
+  optional int32 devMode = 4;
+}
+
+message HWToApp {
+  uint32 batteryVoltage = 1;
+  uint32 speed = 2;
+  bool gpsLocked = 3;
+  string firmwareVersion = 4;
+}
