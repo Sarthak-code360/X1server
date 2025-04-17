@@ -1,27 +1,20 @@
-let currentState = {
-    RPM_preset: undefined,
-    Immobolize: undefined,
-    MotorType: undefined,
-    devMode: undefined
+let deviceState = {
+    RPM_preset: 0,
+    Immobolize: false,
+    MotorType: false,
+    devMode: 0
 };
 
-function updateState(partialUpdate) {
-    let hasChanges = false;
-    for (const key in partialUpdate) {
-        if (partialUpdate[key] !== undefined && partialUpdate[key] !== currentState[key]) {
-            currentState[key] = partialUpdate[key];
-            hasChanges = true;
-        }
-    }
-
-    return hasChanges ? { ...currentState } : null; // null means no update
+function updateState(partial) {
+    deviceState = { ...deviceState, ...partial };
+    return deviceState;
 }
 
 function getState() {
-    return { ...currentState };
+    return deviceState;
 }
 
 module.exports = {
     updateState,
-    getState
+    getState,
 };
