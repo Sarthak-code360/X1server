@@ -1,85 +1,72 @@
+// src/tcp/tcpServer.js
 const net = require("net");
 const protobuf = require("protobufjs");
 const { updateState } = require("../state/deviceState");
 const { broadcastToAppClients } = require("../websocket/wsServer");
 
 const TCP_PORT = 3050;
-
-if (broadcastToAppClients) {
-    broadcastToAppClients(message);
-}
+let AppToHW, HWToApp;
 
 function startServer() {
+    const server = net.createServer(socket => {
+        console.log("✅ HW connected");
+        let buffer = Buffer.alloc(0);
+
+        socket.on("data", chunk => {
+            buffer = Buffer.concat([buffer, chunk]);
+            while (true) {
+                const start = buffer.indexOf(Buffer.from("aabb", "hex"));
+                const end = buffer.indexOf(Buffer.from("cc", "hex"), start);
+                if (start < 0 || end < 0 || end <= start) break;
+                const pkt = buffer.slice(start + 2, end);
+                buffer = buffer.slice(end + 1);
+
+                try {
+                    const msg = HWToApp.decode(pkt);
+                    console.log("📥 From HW:", msg);
+                    if (broadcastToAppClients) {
+                        const enc = HWToApp.encode(msg).finish();
+                        broadcastToAppClients(enc);
+                    }
+                } catch (e) {
+                    console.error("❌ Decode error:", e.message);
+                }
+            }
+        });
+
+        socket.on("close", () => console.log("⛔ HW disconnected"));
+        socket.on("error", e => console.error("⚠️ Socket error:", e.message));
+
+        // Simulate app → HW
+        setInterval(() => {
+            const partial = { RPM_preset: 2500 };
+            const full = updateState(partial);
+            const payload = AppToHW.encode(AppToHW.create(full)).finish();
+            const framed = Buffer.concat([
+                Buffer.from("aabb", "hex"),
+                payload,
+                Buffer.from("cc", "hex")
+            ]);
+            socket.write(framed);
+            console.log("➡️ Sent to HW:", full);
+        }, 5000);
+    });
+
+    server.listen(TCP_PORT, () => {
+        console.log(`🚀 TCP server listening on ${TCP_PORT}`);
+    });
+}
+
+function initServer() {
     protobuf.load("proto/messages.proto", (err, root) => {
         if (err) throw err;
-
-        const AppToHW = root.lookupType("AppToHW");
-        const HWToApp = root.lookupType("HWToApp");
-
-        const server = net.createServer(socket => {
-            console.log("✅ HW connected");
-
-            let buffer = Buffer.alloc(0);
-
-            socket.on("data", chunk => {
-                buffer = Buffer.concat([buffer, chunk]);
-
-                while (true) {
-                    const startIndex = buffer.indexOf(Buffer.from("aabb", "hex"));
-                    const endIndex = buffer.indexOf(Buffer.from("cc", "hex"), startIndex);
-
-                    if (startIndex === -1 || endIndex === -1 || endIndex <= startIndex) break;
-
-                    const packet = buffer.slice(startIndex + 2, endIndex);
-                    buffer = buffer.slice(endIndex + 1);
-
-                    try {
-                        const message = HWToApp.decode(packet);
-                        console.log("📥 From HW:", message);
-                        // You can forward to app here if needed via WebSocket
-                        if (broadcastToAppClients) {
-                            const encodedForApp = HWToApp.encode(message).finish();
-                            broadcastToAppClients(encodedForApp);
-                        }
-
-                    } catch (e) {
-                        console.error("❌ Decode error:", e.message);
-                    }
-                }
-            });
-
-            socket.on("close", () => {
-                console.log("⛔ HW disconnected");
-            });
-
-            socket.on("error", err => {
-                console.error("⚠️ Socket error:", err.message);
-            });
-
-            // Simulate app sending updates
-            setInterval(() => {
-                const partial = {
-                    RPM_preset: 2500, // simulate app sending only RPM
-                };
-
-                const fullState = updateState(partial);
-                const payload = AppToHW.encode(AppToHW.create(fullState)).finish();
-                const framed = Buffer.concat([
-                    Buffer.from("aabb", "hex"),
-                    payload,
-                    Buffer.from("cc", "hex")
-                ]);
-                socket.write(framed);
-                console.log("➡️ Sent to HW:", fullState);
-            }, 5000);
-        });
-
-        server.listen(TCP_PORT, () => {
-            console.log(`🚀 Server listening on port ${TCP_PORT}`);
-        });
+        AppToHW = root.lookupType("AppToHW");
+        HWToApp = root.lookupType("HWToApp");
+        startServer();
     });
 }
 
 module.exports = {
-    startServer,
+    initServer,
+    registerAppBroadcast: (fn) => { broadcastToAppClients = fn; }
 };

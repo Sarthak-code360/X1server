@@ -1,11 +1,11 @@
-const { startServer, registerAppBroadcast } = require("./tcp/tcpServer");
+// src/index.js
+const { initServer, registerAppBroadcast } = require("./tcp/tcpServer");
 const { startWebSocketServer } = require("./websocket/wsServer");
 
-// Start TCP server
-startServer();
+// Load proto, then start TCP server
+initServer();
 
-// Start WebSocket server and connect it to the HW broadcast
-startWebSocketServer((fullState) => {
-    // This callback is invoked when the app sends data to HW
+// Start WS server, wire up App → HW
+startWebSocketServer(fullState => {
     registerAppBroadcast(fullState);
 });
