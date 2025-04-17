@@ -8,8 +8,15 @@ message AppToHW {
 }
 
 message HWToApp {
-  uint32 batteryVoltage = 1;
-  uint32 speed = 2;
-  bool gpsLocked = 3;
-  string firmwareVersion = 4;
+  float Bus_Current = 1;
+  float SOC = 2;
+  uint32 RPM = 3;
+  int32 Torque = 4;
+  string GPS = 5;
+  uint32 GPS_size = 6;
+  uint32 Net_Strength = 7;
+  uint32 Device_Temp = 8;
+  uint32 Motor_Temp = 9;
+  float Bus_Voltage = 10;
+  float Throttle = 11;
 }
