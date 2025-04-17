@@ -15,23 +15,23 @@ function startServer() {
         socket.on("data", chunk => {
             buffer = Buffer.concat([buffer, chunk]);
             while (true) {
-                const start = buffer.indexOf(Buffer.from("aabb", "hex"));
-                const end = buffer.indexOf(Buffer.from("cc", "hex"), start);
+                const start = buffer.indexOf(Buffer.from([0xaa, 0xbb]));
+                const end = buffer.indexOf(Buffer.from([0xcc]), start);
                 if (start < 0 || end < 0 || end <= start) break;
-                const pkt = buffer.slice(start + 2, end);
+
+                const pkt = buffer.slice(start + 2, end); // exclude 0xaa, 0xbb and 0xcc
                 buffer = buffer.slice(end + 1);
 
                 try {
                     const msg = HWToApp.decode(pkt);
                     console.log("📥 From HW:", msg);
-                    if (broadcastToAppClients) {
-                        const enc = HWToApp.encode(msg).finish();
-                        broadcastToAppClients(enc);
-                    }
+                    updateState(msg);
+                    broadcastToAppClients(msg); // already encoded in wsServer
                 } catch (e) {
                     console.error("❌ Decode error:", e.message);
                 }
             }
+
         });
 
         socket.on("close", () => console.log("⛔ HW disconnected"));
@@ -43,9 +43,9 @@ function startServer() {
             const full = updateState(partial);
             const payload = AppToHW.encode(AppToHW.create(full)).finish();
             const framed = Buffer.concat([
-                Buffer.from("aabb", "hex"),
+                Buffer.from([0xaa, 0xbb]),
                 payload,
-                Buffer.from("cc", "hex")
+                Buffer.from([0xcc])
             ]);
             socket.write(framed);
             console.log("➡️ Sent to HW:", full);
