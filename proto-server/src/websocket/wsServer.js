@@ -5,8 +5,7 @@ const { updateState } = require("../state/deviceState");
 let broadcastToHW = null;
 const clients = new Set(); // to keep all connected clients
 
-function startWebSocketServer(serverBroadcastFn) {
-    broadcastToHW = serverBroadcastFn;
+function startWebSocketServer(broadcastToHW) {
 
     protobuf.load("proto/messages.proto", (err, root) => {
         if (err) throw err;
@@ -39,16 +38,14 @@ function startWebSocketServer(serverBroadcastFn) {
         });
 
         // this method gets called by TCP server when HW sends data
-        function broadcastToAppClients(hwMessage) {
-            const payload = HWToApp.encode(hwMessage).finish();
-            for (const ws of clients) {
-                if (ws.readyState === WebSocket.OPEN) {
-                    ws.send(payload);
+        broadcastToAppClients = (msg) => {
+            const payload = HWToApp.encode(HWToApp.create(msg)).finish();
+            for (const client of clients) {
+                if (client.readyState === WebSocket.OPEN) {
+                    client.send(payload);
                 }
             }
-        }
-
-        module.exports.broadcastToAppClients = broadcastToAppClients;
+        };
 
         console.log("🌐 WebSocket server running on port 4050");
     });
@@ -56,4 +53,5 @@ function startWebSocketServer(serverBroadcastFn) {
 
 module.exports = {
     startWebSocketServer,
+    broadcastToAppClients,
 };
