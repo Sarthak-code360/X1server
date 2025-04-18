@@ -1,7 +1,7 @@
 const net = require("net");
 const protobuf = require("protobufjs");
 
-const HOST = "localhost";// 13.232.19.209
+const HOST = "13.232.19.209";// 13.232.19.209
 const PORT = 3050;
 
 protobuf.load("proto/messages.proto", (err, root) => {
