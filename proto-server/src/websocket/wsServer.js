@@ -5,11 +5,11 @@ let broadcastToHW = null;
 let broadcastToAppClients = null;
 const clients = new Set();
 
-function startWebSocketServer(protobufRoot, fn) {
-    const AppToHW = protobufRoot.lookupType("AppToHW");
-    const HWToApp = protobufRoot.lookupType("HWToApp");
+function startWebSocketServer(types, sendToHWCallback) {
+    const AppToHW = types.AppToHW;
+    const HWToApp = types.HWToApp;
 
-    broadcastToHW = fn;
+    broadcastToHW = sendToHWCallback;
 
     const wss = new WebSocket.Server({ port: 4050 });
 
@@ -23,7 +23,9 @@ function startWebSocketServer(protobufRoot, fn) {
                 console.log("📥 From App:", decoded);
 
                 const fullUpdate = updateState(decoded);
-                if (broadcastToHW) broadcastToHW(fullUpdate);
+                if (broadcastToHW) {
+                    broadcastToHW(fullUpdate);
+                }
             } catch (err) {
                 console.error("❌ WS Decode error:", err.message);
             }
@@ -35,7 +37,6 @@ function startWebSocketServer(protobufRoot, fn) {
         });
     });
 
-    // broadcastToAppClients for TCP -> WebSocket
     broadcastToAppClients = (msg) => {
         const payload = HWToApp.encode(HWToApp.create(msg)).finish();
         for (const client of clients) {
