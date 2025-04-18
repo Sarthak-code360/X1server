@@ -1,5 +1,4 @@
 const net = require("net");
-const protobuf = require("protobufjs");
 const { updateState } = require("../state/deviceState");
 
 const TCP_PORT = 3050;
@@ -15,9 +14,11 @@ function startServer() {
 
         socket.on("data", chunk => {
             buffer = Buffer.concat([buffer, chunk]);
+
             while (true) {
                 const start = buffer.indexOf(Buffer.from([0xaa, 0xbb]));
                 const end = buffer.indexOf(Buffer.from([0xcc]), start);
+
                 if (start < 0 || end < 0 || end <= start) break;
 
                 const pkt = buffer.slice(start + 2, end);
@@ -44,22 +45,18 @@ function startServer() {
         });
     });
 
-    server.on("error", err => {
-        if (err.code === 'EADDRINUSE') {
-            console.error(`❌ Port ${TCP_PORT} already in use`);
-        } else {
-            console.error("❌ TCP server error:", err);
-        }
-    });
-
     server.listen(TCP_PORT, () => {
         console.log(`🚀 TCP server listening on ${TCP_PORT}`);
     });
+
+    server.on("error", err => {
+        console.error("❌ TCP server error:", err);
+    });
 }
 
-function initServer(protobufRoot, afterInitCallback) {
-    AppToHW = protobufRoot.lookupType("AppToHW");
-    HWToApp = protobufRoot.lookupType("HWToApp");
+function initServer(types, afterInitCallback) {
+    AppToHW = types.AppToHW;
+    HWToApp = types.HWToApp;
 
     startServer();
 
